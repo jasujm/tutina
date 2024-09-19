@@ -1,0 +1,20 @@
+name: "Tutina"
+description: "Tools for predicting and controlling indoor temperature"
+version: "0.3"
+slug: "tutina"
+init: false
+arch:
+  - aarch64
+options:
+  owm_api_key: null
+  owm_coordinates:
+    lon: null
+    lat: null
+schema:
+  owm_api_key: str
+  owm_coordinates:
+    lon: float
+    lat: float
+homeassistant_api: true
+services:
+  - mysql:need

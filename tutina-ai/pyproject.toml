@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "tutina-ai"
+version = "0.1.0"
+description = "Machine learning model for predicting and controlling indoor temperature"
+authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "^1.0.1"
+pandas = "^2.2.2"
+sqlalchemy = {extras = ["mysql"], version = "^2.0.32"}
+pyarrow = "^17.0.0"
+more-itertools = "^10.4.0"
+rich-click = "^1.8.3"
+tensorflow = "^2.17.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.0"
+mypy = "^1.11.1"
+pandas-stubs = "^2.2.2.240807"
+ipython = "^8.26.0"
+seaborn = "^0.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = ["I"]

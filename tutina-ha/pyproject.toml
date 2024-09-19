@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "tutina"
+version = "0.3"
+description = "Tools for predicting and controlling indoor temperature"
+authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sqlalchemy = {extras = ["mysql"], version = "^2.0.32"}
+click = "^8.1"
+homeassistant-api = "^4.2"
+pydantic = {version = "^2.8", extras = ["dotenv"]}
+schedule = "^1.2"
+requests = "^2.32.3"
+pydantic-settings = "^2.5.2"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = ["I"]
