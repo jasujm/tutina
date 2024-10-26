@@ -9,11 +9,11 @@ readme = "README.md"
 python = "^3.12"
 python-dotenv = "^1.0.1"
 pandas = "^2.2.2"
-sqlalchemy = {extras = ["mysql"], version = "^2.0.32"}
 pyarrow = "^17.0.0"
 more-itertools = "^10.4.0"
 rich-click = "^1.8.3"
 tensorflow = "^2.17.0"
+tutina-lib = { path="../tutina-lib", develop=true }
 
 
 [tool.poetry.group.dev.dependencies]

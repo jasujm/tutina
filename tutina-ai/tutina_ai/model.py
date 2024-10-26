@@ -10,7 +10,7 @@ import tensorflow as tf
 from matplotlib import pyplot as plt
 from sqlalchemy import func as saf
 
-from .db import (
+from tutina_lib.db import (
     HvacState,
     engine,
     forecasts,

@@ -16,3 +16,4 @@ the future, I want to use the model to answer questions like:
 Tutina does not come with batteries included. You'll need a very specific Home
 Assistant setup to make it work. Building an open smart indoor climate system
 that anyone can use is currently not in scope of this project.
+

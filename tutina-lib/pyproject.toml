@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "tutina-lib"
+version = "0.1.0"
+description = "Common libraries for the tutina project"
+authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+python-dotenv = "^1.0.1"
+sqlalchemy = {extras = ["mysql"], version = "^2.0.32"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
