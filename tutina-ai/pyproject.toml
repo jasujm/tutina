@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Machine learning model for predicting and controlling indoor temperature"
 authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
 readme = "README.md"
+packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"

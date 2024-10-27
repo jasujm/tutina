@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Common libraries for the tutina project"
 authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
 readme = "README.md"
+packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
