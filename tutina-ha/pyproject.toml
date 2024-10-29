@@ -7,13 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-sqlalchemy = {extras = ["mysql"], version = "^2.0.32"}
 click = "^8.1"
 homeassistant-api = "^4.2"
 pydantic = {version = "^2.8", extras = ["dotenv"]}
 schedule = "^1.2"
 requests = "^2.32.3"
 pydantic-settings = "^2.5.2"
+tutina-lib = { path="../tutina-lib", develop=true }
 
 
 [tool.poetry.group.dev.dependencies]

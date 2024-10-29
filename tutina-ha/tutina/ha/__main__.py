@@ -7,7 +7,7 @@ from datetime import datetime
 import click
 import schedule
 
-from . import db
+from tutina.lib import db
 from .forecasts import fetch_forecasts, store_forecasts
 from .measurements import (
     EntityParser,

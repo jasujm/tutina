@@ -5,7 +5,7 @@ from datetime import datetime
 import pydantic
 from homeassistant_api import Client
 
-from . import db
+from tutina.lib import db
 from .settings import settings
 
 _measurement_entity_re = re.compile(

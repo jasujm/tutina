@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import pydantic
 import requests
 
-from . import db
+from tutina.lib import db
 from .settings import settings
 
 _DEFAULT_PARAMS = {

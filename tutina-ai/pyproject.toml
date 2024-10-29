@@ -8,7 +8,6 @@ packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-python-dotenv = "^1.0.1"
 pandas = "^2.2.2"
 pyarrow = "^17.0.0"
 more-itertools = "^10.4.0"
