@@ -216,7 +216,7 @@ def get_temperatures(data: pd.DataFrame, rooms: list[str] | None):
 
 def get_forecast_features(data: pd.DataFrame):
     return data[FORECASTS, TEMPERATURE].rename(
-        lambda col: f"temperature_{col}", axis="columns"
+        lambda col: f"temperature_{col:0>2}", axis="columns"
     )
 
 
@@ -303,6 +303,7 @@ def features_to_dataset(features: pd.DataFrame):
 
 
 def features_to_tensors(features: pd.DataFrame, cutoff: pd.Timestamp):
+    features = features.sort_index(axis="columns")
     history_input = _tensorize_with_batch(features.loc[:cutoff, LABELS])
     control_input = _tensorize_with_batch(
         features.loc[cutoff:, CONTROL].drop(cutoff, errors="ignore")
@@ -315,8 +316,8 @@ def features_to_tensors(features: pd.DataFrame, cutoff: pd.Timestamp):
     }
 
 
-def split_data_to_train_and_validation(features):
-    features = features.copy()
+def split_data_to_train_and_validation(features: pd.DataFrame):
+    features = features.sort_index(axis="columns")
     datasets = [None, None, None]
     chunk_sizes = [TRAIN_CHUNK_SIZE, VALIDATION_CHUNK_SIZE, TEST_CHUNK_SIZE]
     for i, chunk_size in itertools.cycle(list(enumerate(chunk_sizes))):
