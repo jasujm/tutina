@@ -12,14 +12,16 @@ from sqlalchemy import func as saf
 
 from tutina.lib.db import (
     HvacState,
-    get_engine,
     forecasts,
+    get_engine,
     hvac_devices,
     hvacs,
     locations,
     measurements,
     opening_states,
     openings,
+)
+from tutina.lib.db import (
     metadata as db_metadata,
 )
 
@@ -338,8 +340,8 @@ def split_data_to_train_and_validation(features: pd.DataFrame):
 
 
 class TutinaModel(tf.keras.Model):
-    def __init__(self, n_labels: int):
-        super().__init__()
+    def __init__(self, n_labels: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.n_labels = n_labels
         # history part
         self.history_normalization_layer = tf.keras.layers.Normalization(
@@ -375,6 +377,12 @@ class TutinaModel(tf.keras.Model):
             ],
             name="mlp",
         )
+
+    def get_config(self):
+        return {
+            **super().get_config(),
+            "n_labels": self.n_labels,
+        }
 
     def adapt(self, training_data: tf.data.Dataset):
         self.history_normalization_layer.adapt(
@@ -416,7 +424,7 @@ class TutinaModel(tf.keras.Model):
 
 
 def load_model(model_file: str):
-    tf.keras.models.load_model(model_file)
+    return tf.keras.models.load_model(model_file)
 
 
 def create_and_train_model(
