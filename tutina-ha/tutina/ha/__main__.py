@@ -15,6 +15,7 @@ from .measurements import (
     store_measurements,
     store_opening_states,
 )
+from .settings import settings
 
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
@@ -36,7 +37,8 @@ def log_errors(func: typing.Callable):
 @log_errors
 def fetch_and_store_measurements():
     entity_parser = EntityParser()
-    with db.engine.begin() as connection:
+    engine = db.get_engine(settings.get_database_url())
+    with engine.begin() as connection:
         store_measurements(entity_parser.get_measurements(), connection=connection)
         store_hvacs(entity_parser.get_hvacs(), connection=connection)
         store_opening_states(entity_parser.get_opening_states(), connection=connection)
@@ -45,7 +47,8 @@ def fetch_and_store_measurements():
 @log_errors
 def fetch_and_store_forecasts():
     forecasts = fetch_forecasts()
-    with db.engine.begin() as connection:
+    engine = db.get_engine(settings.get_database_url())
+    with engine.begin() as connection:
         store_forecasts(forecasts, connection=connection)
 
 
