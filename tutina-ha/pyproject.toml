@@ -17,7 +17,7 @@ tutina-lib = { path="../tutina-lib", develop=true }
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.6.0"
+ruff = "^0.8.3"
 
 [build-system]
 requires = ["poetry-core"]
