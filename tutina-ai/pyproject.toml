@@ -14,6 +14,7 @@ more-itertools = "^10.4.0"
 rich-click = "^1.8.3"
 tensorflow = "^2.17.0"
 tutina-lib = { path="../tutina-lib", develop=true }
+dict-deep = "^4.1.2"
 
 
 [tool.poetry.group.dev.dependencies]

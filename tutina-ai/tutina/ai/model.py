@@ -12,7 +12,7 @@ from sqlalchemy import func as saf
 
 from tutina.lib.db import (
     HvacState,
-    engine,
+    get_engine,
     forecasts,
     hvac_devices,
     hvacs,
@@ -20,6 +20,7 @@ from tutina.lib.db import (
     measurements,
     opening_states,
     openings,
+    metadata as db_metadata,
 )
 
 TIME_WINDOW_IN_SECONDS = 3600
@@ -182,11 +183,13 @@ def load_data(connection: sa.Connection):
     return df
 
 
-def load_data_with_cache(filename: str | None):
+def load_data_with_cache(filename: str | None, database_url: str):
     if filename:
         with contextlib.suppress(OSError):
             return pd.read_parquet(filename)
 
+    engine = get_engine(database_url)
+    db_metadata.create_all(engine)
     with engine.begin() as connection:
         data = load_data(connection)
 
@@ -410,6 +413,10 @@ class TutinaModel(tf.keras.Model):
         predictions = predictions.stack()
         predictions = tf.transpose(predictions, [1, 0, 2])
         return predictions
+
+
+def load_model(model_file: str):
+    tf.keras.models.load_model(model_file)
 
 
 def create_and_train_model(
