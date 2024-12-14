@@ -1,13 +1,12 @@
 import contextlib
 import functools
 import itertools
+from typing import TypedDict
 
 import more_itertools as mi
 import pandas as pd
-import seaborn as sns
 import sqlalchemy as sa
 import tensorflow as tf
-from matplotlib import pyplot as plt
 from sqlalchemy import func as saf
 
 from tutina.lib.db import (
@@ -47,6 +46,12 @@ LABELS = "labels"
 INPUTS = "inputs"
 HISTORY = "history"
 CONTROL = "control"
+
+
+class TutinaInputFeatures(TypedDict):
+    history: pd.DataFrame
+    control: pd.DataFrame
+    forecasts: pd.DataFrame
 
 
 def _windowed_timestamp(column: sa.Column, window=TIME_WINDOW_IN_SECONDS):
@@ -307,18 +312,26 @@ def features_to_dataset(features: pd.DataFrame):
     )
 
 
-def features_to_tensors(features: pd.DataFrame, cutoff: pd.Timestamp):
+def features_to_model_input(
+    features: pd.DataFrame, initial_prediction_ts: pd.Timestamp
+) -> TutinaInputFeatures:
     features = features.sort_index(axis="columns")
-    history_input = _tensorize_with_batch(features.loc[:cutoff, LABELS])
-    control_input = _tensorize_with_batch(
-        features.loc[cutoff:, CONTROL].drop(cutoff, errors="ignore")
+    history_input = features.loc[:initial_prediction_ts, LABELS]
+    control_input = features.loc[initial_prediction_ts:, CONTROL].drop(
+        initial_prediction_ts, errors="ignore"
     )
-    forecast_input = _tensorize_with_batch(features.loc[cutoff, FORECASTS].to_frame())
-    return {
-        HISTORY: history_input,
-        CONTROL: control_input,
-        FORECASTS: forecast_input,
-    }
+    forecast_input = (
+        features.loc[initial_prediction_ts, FORECASTS]
+        .to_frame()
+        .reset_index(drop=True)
+        .rename_axis(index=initial_prediction_ts)
+    )
+    forecast_input.columns = [TEMPERATURE]
+    return TutinaInputFeatures(
+        history=history_input,
+        control=control_input,
+        forecasts=forecast_input,
+    )
 
 
 def split_data_to_train_and_validation(features: pd.DataFrame):
@@ -444,17 +457,22 @@ def create_and_train_model(
     return model, history
 
 
-def predict_single(model: tf.keras.Model, features: pd.DataFrame, cutoff: pd.Timestamp):
-    model_input = features_to_tensors(features, cutoff)
-    prediction = tf.squeeze(model(model_input, training=False), axis=0)
+def predict_single(model: tf.keras.Model, model_input: TutinaInputFeatures):
+    tensorized_input = dict(
+        (k, _tensorize_with_batch(v)) for (k, v) in model_input.items()
+    )
+    prediction = tf.squeeze(model(tensorized_input, training=False), axis=0)
     return pd.DataFrame(
         prediction,
-        columns=features[LABELS].columns,
-        index=features.index[-prediction.shape[0] :],
+        columns=model_input[HISTORY].columns,
+        index=model_input[CONTROL].index,
     )
 
 
 def plot_comparison(sample: pd.DataFrame, prediction: pd.DataFrame):
+    import seaborn as sns
+    from matplotlib import pyplot as plt
+
     comparison_data = pd.concat(
         [sample[LABELS], prediction], keys=["actual", "predicted"], axis="columns"
     )

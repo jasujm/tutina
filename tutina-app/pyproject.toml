@@ -11,11 +11,13 @@ fastapi = {extras = ["standard"], version = "^0.115.6"}
 pydantic = "^2.10.3"
 tutina-lib = { path="../tutina-lib", develop=true }
 tutina-ai = { path="../tutina-ai", develop=true }
+dict-deep = "^4.1.2"
 
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.3"
 mypy = "^1.13.0"
+pandas-stubs = "^2.2.3.241126"
 
 [build-system]
 requires = ["poetry-core"]

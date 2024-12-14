@@ -63,7 +63,8 @@ def main(config_file, interactive: bool):
     start = random.randrange(0, len(features.index) - 30)
     sample = features.iloc[start : start + 30, :]
     cutoff = sample.index[11]
-    prediction = m.predict_single(model, sample, cutoff)
+    model_input = m.features_to_model_input(sample, cutoff)
+    prediction = m.predict_single(model, model_input)
     m.plot_comparison(sample, prediction)
 
     if interactive:
