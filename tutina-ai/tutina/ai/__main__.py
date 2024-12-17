@@ -4,10 +4,10 @@ dotenv.load_dotenv()
 
 import os.path
 import random
-from typing import Callable
+from typing import Annotated, Callable
 
-import rich_click as click
 import tomllib
+import typer
 from dict_deep import deep_get
 from rich import print
 
@@ -25,13 +25,22 @@ except ImportError:
 from . import model as m
 
 
-@click.command()
-@click.option("--config-file", help="Config file", type=click.File("rb"))
-@click.option(
-    "--interactive", "-i", help="Drop to REPL after loading data", is_flag=True
-)
-@click.option("--database-url", help="Database URL for model training data")
-def main(config_file, interactive: bool, database_url: str):
+def main(
+    config_file: Annotated[
+        typer.FileBinaryRead,
+        typer.Option(help="Config file", envvar="TUTINA_CONFIG_FILE"),
+    ],
+    database_url: Annotated[
+        str,
+        typer.Option(
+            help="Database URL for model training data", envvar="TUTINA_DATABASE_URL"
+        ),
+    ],
+    interactive: Annotated[
+        bool,
+        typer.Option("--interactive", "-i", help="Drop to REPL after loading data"),
+    ] = False,
+):
     if config_file:
         with config_file:
             config = tomllib.load(config_file)
@@ -71,4 +80,4 @@ def main(config_file, interactive: bool, database_url: str):
 
 
 if __name__ == "__main__":
-    main(auto_envvar_prefix="TUTINA")
+    typer.run(main)
