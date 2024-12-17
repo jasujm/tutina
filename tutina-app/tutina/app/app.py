@@ -1,5 +1,3 @@
-from rich import print
-
 import dotenv
 
 dotenv.load_dotenv()
@@ -37,31 +35,31 @@ async def _lifespan(_app):
 app = fastapi.FastAPI(lifespan=_lifespan)
 _tutina_model: m.TutinaModel = None
 
-FeatureDict = dict[str, float]
+FeatureTimeSeries = dict[datetime, float]
 
 
-class ForecastDict(TypedDict):
-    temperature: float
+class Forecasts(TypedDict):
+    temperature: list[float]
 
 
 class TutinaModelInput(pydantic.BaseModel):
-    history: dict[datetime, FeatureDict]
-    control: dict[datetime, FeatureDict]
-    forecasts: list[ForecastDict]
+    history: dict[str, FeatureTimeSeries]
+    control: dict[str, FeatureTimeSeries]
+    forecasts: Forecasts
 
 
 def _request_body_to_df(model_input: TutinaModelInput):
     return m.TutinaInputFeatures(
-        history=pd.DataFrame.from_dict(model_input.history, orient="index"),
-        control=pd.DataFrame.from_dict(model_input.control, orient="index"),
-        forecasts=pd.DataFrame(model_input.forecasts),
+        history=pd.DataFrame.from_dict(model_input.history),
+        control=pd.DataFrame.from_dict(model_input.control),
+        forecasts=pd.DataFrame.from_dict(model_input.forecasts),
     )
 
 
 @app.post("/predictions")
 def post_predictions(
     model_input: TutinaModelInput,
-) -> dict[datetime, FeatureDict]:
+) -> dict[str, FeatureTimeSeries]:
     model_input_dfs = _request_body_to_df(model_input)
     prediction = m.predict_single(_tutina_model, model_input_dfs)
-    return prediction.to_dict(orient="index")
+    return prediction.to_dict()
