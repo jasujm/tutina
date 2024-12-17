@@ -30,16 +30,15 @@ from . import model as m
 @click.option(
     "--interactive", "-i", help="Drop to REPL after loading data", is_flag=True
 )
-def main(config_file, interactive: bool):
+@click.option("--database-url", help="Database URL for model training data")
+def main(config_file, interactive: bool, database_url: str):
     if config_file:
         with config_file:
             config = tomllib.load(config_file)
     else:
         config = {}
 
-    data = m.load_data_with_cache(
-        deep_get(config, "model.data_file"), deep_get(config, "database.url")
-    )
+    data = m.load_data_with_cache(deep_get(config, "model.data_file"), database_url)
     model_config = deep_get(config, "model.config") or {}
     data = m.clean_data(data, model_config)
     features = m.get_features(data, model_config)
