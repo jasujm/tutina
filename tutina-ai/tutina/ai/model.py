@@ -313,16 +313,16 @@ def features_to_dataset(features: pd.DataFrame):
 
 
 def features_to_model_input(
-    features: pd.DataFrame, initial_prediction_ts: pd.Timestamp
+    features: pd.DataFrame, last_history_ts: pd.Timestamp
 ) -> TutinaInputFeatures:
     features = features.sort_index(axis="columns")
-    history_input = features.loc[:initial_prediction_ts, LABELS]
-    control_input = features.loc[initial_prediction_ts:, CONTROL].drop(
-        initial_prediction_ts, errors="ignore"
+    history_input = features.loc[:last_history_ts, LABELS]
+    control_input = features.loc[last_history_ts:, CONTROL].drop(
+        last_history_ts, errors="ignore"
     )
-    forecast_input = features.loc[initial_prediction_ts, FORECASTS].to_frame()
+    forecast_input = features.loc[last_history_ts, FORECASTS].to_frame()
     forecast_input.index = pd.date_range(
-        initial_prediction_ts, periods=len(forecast_input.index), freq="h"
+        last_history_ts, periods=len(forecast_input.index), freq="h"
     )
     forecast_input.columns = [TEMPERATURE]
     return TutinaInputFeatures(
