@@ -320,11 +320,9 @@ def features_to_model_input(
     control_input = features.loc[initial_prediction_ts:, CONTROL].drop(
         initial_prediction_ts, errors="ignore"
     )
-    forecast_input = (
-        features.loc[initial_prediction_ts, FORECASTS]
-        .to_frame()
-        .reset_index(drop=True)
-        .rename_axis(index=initial_prediction_ts)
+    forecast_input = features.loc[initial_prediction_ts, FORECASTS].to_frame()
+    forecast_input.index = pd.date_range(
+        initial_prediction_ts, periods=len(forecast_input.index), freq="h"
     )
     forecast_input.columns = [TEMPERATURE]
     return TutinaInputFeatures(

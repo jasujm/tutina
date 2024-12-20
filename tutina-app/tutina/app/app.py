@@ -39,7 +39,7 @@ FeatureTimeSeries = dict[datetime, float]
 
 
 class Forecasts(TypedDict):
-    temperature: list[float]
+    temperature: FeatureTimeSeries
 
 
 class TutinaModelInput(pydantic.BaseModel):
@@ -52,7 +52,7 @@ def _request_body_to_df(model_input: TutinaModelInput):
     return m.TutinaInputFeatures(
         history=pd.DataFrame.from_dict(model_input.history),
         control=pd.DataFrame.from_dict(model_input.control),
-        forecasts=pd.DataFrame.from_dict(model_input.forecasts),
+        forecasts=pd.DataFrame.from_dict(model_input.forecasts),  # type: ignore
     )
 
 
