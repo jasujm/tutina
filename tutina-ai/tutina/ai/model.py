@@ -4,6 +4,7 @@ import itertools
 from typing import TypedDict
 
 import more_itertools as mi
+import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 import tensorflow as tf
@@ -34,10 +35,9 @@ TEST_CHUNK_SIZE = 256
 N_EPOCHS = 64
 
 OUTDOOR = "outdoor"
+TEMPERATURE_OUTDOOR = f"temperature_{OUTDOOR}"
 MEASUREMENTS = "measurements"
 TEMPERATURE = "temperature"
-INDOOR_TEMPERATURE = "indoor_temperature"
-OUTDOOR_TEMPERATURE = "outdoor_temperature"
 FORECASTS = "forecasts"
 HVACS = "hvacs"
 OPENINGS = "openings"
@@ -487,3 +487,67 @@ def plot_comparison(sample: pd.DataFrame, prediction: pd.DataFrame):
         hue="type",
     )
     plt.show()
+
+
+def plot_prediction(history: pd.DataFrame, prediction: pd.DataFrame):
+    import matplotlib.colors as mcolors
+    import matplotlib.dates as mdates
+    import matplotlib.pyplot as plt
+
+    prediction = pd.concat([history.iloc[-1:], prediction])
+    history_mean = history.drop(columns=TEMPERATURE_OUTDOOR, errors="ignore").mean(
+        axis="columns"
+    )
+    prediction_mean = prediction.drop(
+        columns=TEMPERATURE_OUTDOOR, errors="ignore"
+    ).mean(axis="columns")
+    locator = mdates.HourLocator(byhour=np.arange(0, 24, 4))
+    formatter = mdates.ConciseDateFormatter(locator)
+    fig, ax = plt.subplots()
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(formatter)
+    lines = []
+    lines.append(
+        ax.plot(
+            history_mean.index,
+            history_mean,
+            label="Measured",
+            linestyle="solid",
+            color="black",
+            linewidth=3,
+        )[0]
+    )
+    lines.append(
+        ax.plot(
+            prediction_mean.index,
+            prediction_mean,
+            linestyle="dashed",
+            color="black",
+            label="Predicted",
+            linewidth=3,
+        )[0]
+    )
+    colors = mcolors.TABLEAU_COLORS.values()
+    for column, color in zip(history.columns, colors):
+        lines.append(
+            ax.plot(
+                history.index,
+                history[column],
+                label=column,
+                linestyle="solid",
+                color=color,
+                alpha=0.5,
+            )[0]
+        )
+        ax.plot(
+            prediction.index,
+            prediction[column],
+            linestyle="dashed",
+            color=color,
+            alpha=0.5,
+        )
+    ax.set(ylabel="Temperature (℃)", title="Room temperature prediction")
+    ax.legend(handles=lines)
+    ax.grid()
+    ax.autoscale(axis="x", tight=True)
+    return fig, ax
