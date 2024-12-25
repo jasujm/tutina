@@ -455,7 +455,7 @@ def create_and_train_model(
     return model, history
 
 
-def predict_single(model: tf.keras.Model, model_input: TutinaInputFeatures):
+def predict_single(model: TutinaModel, model_input: TutinaInputFeatures):
     tensorized_input = dict(
         (k, _tensorize_with_batch(v)) for (k, v) in model_input.items()
     )
