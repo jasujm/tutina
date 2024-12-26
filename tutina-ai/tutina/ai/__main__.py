@@ -47,7 +47,9 @@ def main(
     else:
         config = {}
 
-    data = m.load_data_with_cache(deep_get(config, "model.data_file"), database_url)
+    data_file = deep_get(config, "model.data_file")
+    print(f"Loading data from {data_file}")
+    data = m.load_data_with_cache(data_file, database_url)
     model_config = deep_get(config, "model.config") or {}
     data = m.clean_data(data, model_config)
     features = m.get_features(data, model_config)

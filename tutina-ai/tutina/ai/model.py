@@ -122,6 +122,7 @@ def load_hvacs_data(connection: sa.Connection):
         )
         .select_from(hvacs.join(hvac_devices))
         .group_by(time_column, hvacs.c.device_id)
+        .order_by(time_column)
     )
     data = pd.read_sql(expression, connection)
     return data.pivot(
@@ -140,6 +141,7 @@ def load_openings_data(connection: sa.Connection):
         )
         .select_from(opening_states.join(openings))
         .group_by(time_column, opening_states.c.opening_id)
+        .order_by(time_column)
     )
     data = pd.read_sql(expression, connection)
     return data.pivot(
@@ -164,11 +166,15 @@ def load_forecasts_data(connection: sa.Connection):
         )
         .where(in_hours_column < MAX_FORECAST_IN_HOURS)
         .group_by(time_column, in_hours_column)
+        .order_by(time_column)
     )
     data = pd.read_sql(expression, connection)
     return data.pivot(
         index="timestamp",
         columns="in_hours",
+    ).rename(
+        columns=lambda col: str(col).zfill(2),
+        level=1,
     )
 
 
@@ -177,12 +183,12 @@ def load_data(connection: sa.Connection):
         load_measurements_data(connection), MEASUREMENTS
     )
     hvacs = _prepend_column_level(load_hvacs_data(connection), HVACS)
-    openings = _prepend_column_level(load_openings_data(connection), "openings")
+    openings = _prepend_column_level(load_openings_data(connection), OPENINGS)
     forecasts = _prepend_column_level(load_forecasts_data(connection), FORECASTS)
 
-    df = functools.reduce(pd.DataFrame.join, [measurements, hvacs, openings, forecasts])
+    df = functools.reduce(pd.DataFrame.join, [forecasts, hvacs, measurements, openings])
     _fill_forecasts(df, forecasts.index)
-    return df
+    return df.sort_index(axis="columns")
 
 
 def load_data_with_cache(filename: str | None, database_url: str):
@@ -220,9 +226,7 @@ def get_temperatures(data: pd.DataFrame, rooms: list[str] | None):
 
 
 def get_forecast_features(data: pd.DataFrame):
-    return data[FORECASTS, TEMPERATURE].rename(
-        lambda col: f"temperature_{col:0>2}", axis="columns"
-    )
+    return data[FORECASTS, TEMPERATURE].rename(columns=lambda col: f"temperature_{col}")
 
 
 def get_hvac_features(data: pd.DataFrame, devices: list[str] | None):
