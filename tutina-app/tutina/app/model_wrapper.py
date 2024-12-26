@@ -4,34 +4,43 @@ dotenv.load_dotenv()
 
 import logging
 import os
+import typing
 
 import pandas as pd
 import tomllib
 from dict_deep import deep_get
 
-from tutina.ai import model as m
-from tutina.ai.model import TutinaInputFeatures, TutinaModel
+from tutina.ai.types import TutinaInputFeatures
+
+if typing.TYPE_CHECKING:
+    from tutina.ai.model import TutinaModel
 
 logger = logging.getLogger(__name__)
 
 
 class TutinaModelWrapper:
-    _model: TutinaModel
+    _model: "TutinaModel"
 
     @classmethod
     def from_config(cls, config):
+        from tutina.ai import model as m
+
         model_file = deep_get(config, "model.model_file")
         logger.info("Loading model from from %s", model_file)
         return cls(m.load_model(model_file))
 
     @staticmethod
     def plot_prediction(history: pd.DataFrame, prediction: pd.DataFrame):
+        from tutina.ai import model as m
+
         return m.plot_prediction(history, prediction)
 
-    def __init__(self, model: TutinaModel):
+    def __init__(self, model: "TutinaModel"):
         self._model = model
 
     def predict_single(self, model_input: TutinaInputFeatures):
+        from tutina.ai import model as m
+
         return m.predict_single(self._model, model_input)
 
 

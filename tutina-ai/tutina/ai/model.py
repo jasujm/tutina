@@ -1,7 +1,6 @@
 import contextlib
 import functools
 import itertools
-from typing import TypedDict
 
 import more_itertools as mi
 import numpy as np
@@ -25,6 +24,8 @@ from tutina.lib.db import (
     metadata as db_metadata,
 )
 
+from .types import TutinaInputFeatures
+
 TIME_WINDOW_IN_SECONDS = 3600
 MAX_FORECAST_IN_HOURS = 24
 HISTORY_TIMESTEPS_IN_FEATURES = 12
@@ -46,12 +47,6 @@ LABELS = "labels"
 INPUTS = "inputs"
 HISTORY = "history"
 CONTROL = "control"
-
-
-class TutinaInputFeatures(TypedDict):
-    history: pd.DataFrame
-    control: pd.DataFrame
-    forecasts: pd.DataFrame
 
 
 def _windowed_timestamp(column: sa.Column, window=TIME_WINDOW_IN_SECONDS):
