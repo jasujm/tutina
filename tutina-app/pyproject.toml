@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Web application serving predictions using the Tutina AI model"
 authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
 readme = "README.md"
+packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -18,6 +19,7 @@ dict-deep = "^4.1.2"
 ruff = "^0.8.3"
 mypy = "^1.13.0"
 pandas-stubs = "^2.2.3.241126"
+pytest = "^8.3.4"
 
 [build-system]
 requires = ["poetry-core"]
