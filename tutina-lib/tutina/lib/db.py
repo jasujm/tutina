@@ -1,12 +1,10 @@
-from enum import Enum
 import os
+from enum import Enum
 
 from sqlalchemy import (
     Boolean,
     Column,
-    Connection,
     DateTime,
-    Enum as EnumField,
     Float,
     ForeignKey,
     Integer,
@@ -14,20 +12,14 @@ from sqlalchemy import (
     String,
     Table,
     UniqueConstraint,
-    create_engine,
     func,
     select,
-    Engine
+)
+from sqlalchemy import (
+    Enum as EnumField,
 )
 from sqlalchemy.engine import URL as EngineURL
-
-_engine: Engine | None = None
-
-def get_engine(database_url: str | EngineURL) -> Engine:
-    global _engine
-    if not _engine:
-        _engine = create_engine(database_url)
-    return _engine
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, create_async_engine
 
 metadata = MetaData()
 

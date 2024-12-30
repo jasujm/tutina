@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import logging
 import time
@@ -8,13 +9,15 @@ import click
 import schedule
 
 from tutina.lib import db
-from .forecasts import fetch_forecasts, store_forecasts
-from .measurements import (
-    EntityParser,
+from tutina.lib.models import (
+    store_forecasts,
     store_hvacs,
     store_measurements,
     store_opening_states,
 )
+
+from .forecasts import fetch_forecasts
+from .measurements import EntityParser
 from .settings import settings
 
 logging.basicConfig(
@@ -37,19 +40,32 @@ def log_errors(func: typing.Callable):
 @log_errors
 def fetch_and_store_measurements():
     entity_parser = EntityParser()
-    engine = db.get_engine(settings.get_database_url())
-    with engine.begin() as connection:
-        store_measurements(entity_parser.get_measurements(), connection=connection)
-        store_hvacs(entity_parser.get_hvacs(), connection=connection)
-        store_opening_states(entity_parser.get_opening_states(), connection=connection)
+    measurements = entity_parser.get_measurements()
+    hvacs = entity_parser.get_hvacs()
+    opening_states = entity_parser.get_opening_states()
+
+    async def _store_measurements():
+        engine = db.create_async_engine(settings.get_database_url())
+        async with engine.begin() as connection, asyncio.TaskGroup() as tg:
+            tg.create_task(store_measurements(measurements, connection=connection))
+            tg.create_task(store_hvacs(hvacs, connection=connection))
+            tg.create_task(store_opening_states(opening_states, connection=connection))
+        await engine.dispose()
+
+    asyncio.run(_store_measurements())
 
 
 @log_errors
 def fetch_and_store_forecasts():
     forecasts = fetch_forecasts()
-    engine = db.get_engine(settings.get_database_url())
-    with engine.begin() as connection:
-        store_forecasts(forecasts, connection=connection)
+
+    async def _store_forecasts():
+        engine = db.create_async_engine(settings.get_database_url())
+        async with engine.begin() as connection:
+            await store_forecasts(forecasts, connection=connection)
+        await engine.dispose()
+
+    asyncio.run(_store_forecasts())
 
 
 def schedule_job(func: typing.Callable, minutes: int):

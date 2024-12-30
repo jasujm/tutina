@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 import pydantic
 import requests
 
-from tutina.lib import db
+from tutina.lib.models import Forecast
+
 from .settings import settings
 
 _DEFAULT_PARAMS = {
@@ -12,15 +13,6 @@ _DEFAULT_PARAMS = {
     "units": "metric",
     **settings.owm_coordinates.dict(),
 }
-
-
-class Forecast(pydantic.BaseModel):
-    reference_timestamp: datetime
-    temperature: float
-    humidity: float
-    pressure: float
-    wind_speed: float
-    status: str
 
 
 def fetch_forecasts() -> list[Forecast]:
@@ -40,11 +32,3 @@ def fetch_forecasts() -> list[Forecast]:
         )
         for forecast in forecasts["hourly"]
     ]
-
-
-def store_forecasts(
-    forecasts: typing.Iterable[Forecast], *, connection: db.Connection
-) -> None:
-    connection.execute(
-        db.forecasts.insert(), [forecast.dict() for forecast in forecasts]
-    )

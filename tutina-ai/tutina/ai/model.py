@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import functools
 import itertools
@@ -10,9 +11,10 @@ import tensorflow as tf
 from sqlalchemy import func as saf
 
 from tutina.lib.db import (
+    AsyncConnection,
     HvacState,
     forecasts,
-    get_engine,
+    create_async_engine,
     hvac_devices,
     hvacs,
     locations,
@@ -20,9 +22,7 @@ from tutina.lib.db import (
     opening_states,
     openings,
 )
-from tutina.lib.db import (
-    metadata as db_metadata,
-)
+from tutina.lib.db import metadata as db_metadata
 
 from .types import TutinaInputFeatures
 
@@ -87,7 +87,7 @@ def _tensorize_with_batch(data):
     return tf.expand_dims(tf.constant(data), axis=0)
 
 
-def load_measurements_data(connection: sa.Connection):
+async def load_measurements_data(connection: AsyncConnection):
     time_column = _windowed_timestamp(measurements.c.timestamp)
     expression = (
         sa.select(
@@ -103,15 +103,29 @@ def load_measurements_data(connection: sa.Connection):
             measurements.c.location_id,
         )
     )
-    data = pd.read_sql(expression, connection)
-    return data.pivot(
-        index="timestamp",
-        columns="location",
-        values=[TEMPERATURE, "humidity", "pressure"],
+    result = await connection.execute(expression)
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(
+        None,
+        functools.partial(
+            pd.DataFrame.from_records,
+            result.fetchall(),
+            columns=result.keys(),
+            coerce_float=True,
+        ),
+    )
+    return await loop.run_in_executor(
+        None,
+        functools.partial(
+            data.pivot,
+            index="timestamp",
+            columns="location",
+            values=[TEMPERATURE, "humidity", "pressure"],
+        ),
     )
 
 
-def load_hvacs_data(connection: sa.Connection):
+async def load_hvacs_data(connection: AsyncConnection):
     time_column = _windowed_timestamp(hvacs.c.timestamp)
     expression = (
         sa.select(
@@ -124,14 +138,28 @@ def load_hvacs_data(connection: sa.Connection):
         .group_by(time_column, hvacs.c.device_id)
         .order_by(time_column)
     )
-    data = pd.read_sql(expression, connection)
-    return data.pivot(
-        index="timestamp",
-        columns="device",
+    result = await connection.execute(expression)
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(
+        None,
+        functools.partial(
+            pd.DataFrame.from_records,
+            result.fetchall(),
+            columns=result.keys(),
+            coerce_float=True,
+        ),
+    )
+    return await loop.run_in_executor(
+        None,
+        functools.partial(
+            data.pivot,
+            index="timestamp",
+            columns="device",
+        ),
     )
 
 
-def load_openings_data(connection: sa.Connection):
+async def load_openings_data(connection: sa.Connection):
     time_column = _windowed_timestamp(opening_states.c.timestamp)
     expression = (
         sa.select(
@@ -143,14 +171,28 @@ def load_openings_data(connection: sa.Connection):
         .group_by(time_column, opening_states.c.opening_id)
         .order_by(time_column)
     )
-    data = pd.read_sql(expression, connection)
-    return data.pivot(
-        index="timestamp",
-        columns="opening",
+    result = await connection.execute(expression)
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(
+        None,
+        functools.partial(
+            pd.DataFrame.from_records,
+            result.fetchall(),
+            columns=result.keys(),
+            coerce_float=True,
+        ),
+    )
+    return await loop.run_in_executor(
+        None,
+        functools.partial(
+            data.pivot,
+            index="timestamp",
+            columns="opening",
+        ),
     )
 
 
-def load_forecasts_data(connection: sa.Connection):
+async def load_forecasts_data(connection: sa.Connection):
     time_column = _windowed_timestamp(forecasts.c.timestamp, 3600)
     in_hours_column = saf.hour(
         saf.timediff(forecasts.c.reference_timestamp, time_column)
@@ -168,27 +210,49 @@ def load_forecasts_data(connection: sa.Connection):
         .group_by(time_column, in_hours_column)
         .order_by(time_column)
     )
-    data = pd.read_sql(expression, connection)
-    return data.pivot(
-        index="timestamp",
-        columns="in_hours",
-    ).rename(
+    result = await connection.execute(expression)
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(
+        None,
+        functools.partial(
+            pd.DataFrame.from_records,
+            result.fetchall(),
+            columns=result.keys(),
+            coerce_float=True,
+        ),
+    )
+    pivoted_data = await loop.run_in_executor(
+        None,
+        functools.partial(
+            data.pivot,
+            index="timestamp",
+            columns="in_hours",
+        ),
+    )
+    return pivoted_data.rename(
         columns=lambda col: str(col).zfill(2),
         level=1,
     )
 
 
-def load_data(connection: sa.Connection):
-    measurements = _prepend_column_level(
-        load_measurements_data(connection), MEASUREMENTS
-    )
-    hvacs = _prepend_column_level(load_hvacs_data(connection), HVACS)
-    openings = _prepend_column_level(load_openings_data(connection), OPENINGS)
-    forecasts = _prepend_column_level(load_forecasts_data(connection), FORECASTS)
+async def load_data(connection: AsyncConnection):
+    dfs = [
+        _prepend_column_level(df, prefix)
+        for (df, prefix) in zip(
+            await asyncio.gather(
+                load_measurements_data(connection),
+                load_hvacs_data(connection),
+                load_openings_data(connection),
+                load_forecasts_data(connection),
+            ),
+            [MEASUREMENTS, HVACS, OPENINGS, FORECASTS],
+        )
+    ]
 
-    df = functools.reduce(pd.DataFrame.join, [forecasts, hvacs, measurements, openings])
-    _fill_forecasts(df, forecasts.index)
-    return df.sort_index(axis="columns")
+    result = functools.reduce(pd.DataFrame.join, dfs)
+
+    _fill_forecasts(result, dfs[-1].index)
+    return result.sort_index(axis="columns")
 
 
 def load_data_with_cache(filename: str | None, database_url: str):
@@ -196,10 +260,14 @@ def load_data_with_cache(filename: str | None, database_url: str):
         with contextlib.suppress(OSError):
             return pd.read_parquet(filename)
 
-    engine = get_engine(database_url)
-    db_metadata.create_all(engine)
-    with engine.begin() as connection:
-        data = load_data(connection)
+    async def _async_load_data():
+        engine = create_async_engine(database_url)
+        async with engine.begin() as connection:
+            await connection.run_sync(db_metadata.create_all)
+            return await load_data(connection)
+        await engine.dispose()
+
+    data = asyncio.run(_async_load_data())
 
     if filename:
         data.to_parquet(filename)
