@@ -3,10 +3,16 @@ from datetime import datetime
 
 import pydantic
 
-from . import db
+from . import db, util
+
+if util.is_testing():
+    IGNORE_PREFIX = "OR IGNORE"
+else:
+    IGNORE_PREFIX = "IGNORE"
 
 
 class Measurement(pydantic.BaseModel):
+    """A single measurement from thermometer/hygrometer/barometer"""
     location: str
     temperature: typing.Optional[float]
     humidity: typing.Optional[float]
@@ -14,18 +20,21 @@ class Measurement(pydantic.BaseModel):
 
 
 class Hvac(pydantic.BaseModel):
+    """HVAC device state"""
     device: str
     state: typing.Optional[db.HvacState]
     temperature: typing.Optional[float]
 
 
 class OpeningState(pydantic.BaseModel):
+    """Door/window opening state"""
     opening_type: db.OpeningType
     opening: str
     is_open: bool
 
 
 class Forecast(pydantic.BaseModel):
+    """Weather forecast at a single point of time"""
     reference_timestamp: datetime
     temperature: float
     humidity: float
@@ -39,7 +48,7 @@ async def store_measurements(
 ) -> None:
     await connection.execute(
         db.locations.insert()
-        .prefix_with("IGNORE")
+        .prefix_with(IGNORE_PREFIX)
         .values([{"slug": measurement.location} for measurement in measurements]),
     )
     locations = dict(
@@ -52,7 +61,9 @@ async def store_measurements(
         [
             {
                 "location_id": locations[measurement.location],
-                **measurement.dict(include={"temperature", "humidity", "pressure"}),
+                **measurement.model_dump(
+                    include={"temperature", "humidity", "pressure"}
+                ),
             }
             for measurement in measurements
         ],
@@ -64,7 +75,7 @@ async def store_hvacs(
 ) -> None:
     await connection.execute(
         db.hvac_devices.insert()
-        .prefix_with("IGNORE")
+        .prefix_with(IGNORE_PREFIX)
         .values([{"slug": hvac.device} for hvac in hvacs]),
     )
     devices = dict(
@@ -79,7 +90,7 @@ async def store_hvacs(
         [
             {
                 "device_id": devices[hvac.device],
-                **hvac.dict(include={"state", "temperature"}),
+                **hvac.model_dump(include={"state", "temperature"}),
             }
             for hvac in hvacs
         ],
@@ -91,7 +102,7 @@ async def store_opening_states(
 ) -> None:
     await connection.execute(
         db.openings.insert()
-        .prefix_with("IGNORE")
+        .prefix_with(IGNORE_PREFIX)
         .values(
             [
                 {"type": opening_state.opening_type, "slug": opening_state.opening}
@@ -101,9 +112,11 @@ async def store_opening_states(
     )
     openings = {
         tuple(key): id
-        for (*key, id) in await connection.execute(
-            db.select(db.openings.c.type, db.openings.c.slug, db.openings.c.id)
-        )
+        for (*key, id) in (
+            await connection.execute(
+                db.select(db.openings.c.type, db.openings.c.slug, db.openings.c.id)
+            )
+        ).fetchall()
     }
     await connection.execute(
         db.opening_states.insert(),
@@ -112,7 +125,7 @@ async def store_opening_states(
                 "opening_id": openings[
                     (opening_state.opening_type, opening_state.opening)
                 ],
-                **opening_state.dict(include={"is_open"}),
+                **opening_state.model_dump(include={"is_open"}),
             }
             for opening_state in opening_states
         ],
@@ -123,5 +136,5 @@ async def store_forecasts(
     forecasts: typing.Iterable[Forecast], *, connection: db.AsyncConnection
 ) -> None:
     await connection.execute(
-        db.forecasts.insert(), [forecast.dict() for forecast in forecasts]
+        db.forecasts.insert(), [forecast.model_dump() for forecast in forecasts]
     )

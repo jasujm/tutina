@@ -20,6 +20,9 @@ ruff = "^0.8.3"
 mypy = "^1.13.0"
 pandas-stubs = "^2.2.3.241126"
 pytest = "^8.3.4"
+aiosqlite = "^0.20.0"
+pytest-asyncio = "^0.25.0"
+faker = "^33.1.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -27,3 +30,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
 select = ["I"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

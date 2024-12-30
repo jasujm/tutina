@@ -7,7 +7,8 @@ import fastapi.responses as fresponses
 import pandas as pd
 import pydantic
 
-from ..model_wrapper import TutinaInputFeatures, TutinaModelWrapper, get_tutina_model
+from ..dependencies import get_tutina_model
+from ..model_wrapper import TutinaInputFeatures, TutinaModelWrapper
 
 router = fastapi.APIRouter(
     prefix="/predictions",
@@ -24,9 +25,22 @@ class Forecasts(TypedDict):
 
 
 class TutinaModelInput(pydantic.BaseModel):
-    history: dict[str, FeatureTimeSeries]
-    control: dict[str, FeatureTimeSeries]
-    forecasts: Forecasts
+    """Input to the tutina model"""
+
+    history: Annotated[
+        dict[str, FeatureTimeSeries],
+        pydantic.Field(
+            description="Measurement history prior to the predicted timesteps"
+        ),
+    ]
+    control: Annotated[
+        dict[str, FeatureTimeSeries],
+        pydantic.Field(description="Control input for the predicted timesteps"),
+    ]
+    forecasts: Annotated[
+        Forecasts,
+        pydantic.Field(description="Wather forecast for the predicted timesteps"),
+    ]
 
 
 def _request_body_to_df(model_input: TutinaModelInput):
@@ -57,7 +71,12 @@ def _create_plot_response(
 def post_predictions(
     tutina_model: Annotated[TutinaModelWrapper, fastapi.Depends(get_tutina_model)],
     model_input: TutinaModelInput,
-    accept: Annotated[str | None, fastapi.Header()] = None,
+    accept: Annotated[
+        str | None,
+        fastapi.Header(
+            description="By default, return the response in `application/json`. Request `image/*` or `image/svg+xml` for a plot in SVG format."
+        ),
+    ] = None,
 ) -> dict[str, FeatureTimeSeries]:
     accepted_media_types = _parse_accepted_media_types(accept)
     model_input_dfs = _request_body_to_df(model_input)

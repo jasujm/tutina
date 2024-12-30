@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+import typing
 
 from sqlalchemy import (
     Boolean,
@@ -21,6 +22,8 @@ from sqlalchemy import (
 from sqlalchemy.engine import URL as EngineURL
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, create_async_engine
 
+from . import util
+
 metadata = MetaData()
 
 
@@ -38,7 +41,11 @@ class OpeningType(Enum):
     window = "window"
 
 
-UTC_NOW = func.convert_tz(func.now(), "SYSTEM", "+00:00")
+UTC_NOW: typing.Any
+if util.is_testing():
+    UTC_NOW = func.now()
+else:
+    UTC_NOW = func.convert_tz(func.now(), "SYSTEM", "+00:00")
 
 
 locations = Table(

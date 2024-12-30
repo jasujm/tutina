@@ -26,17 +26,18 @@ def prediction():
     return _fixture_from_file("prediction.json")
 
 
-client = TestClient(app)
-
-
-def test_post_predictions_json(mock_tutina_model, model_input, prediction):
+def test_post_predictions_json(
+    client: TestClient, mock_tutina_model, model_input, prediction
+):
     mock_tutina_model.predict_single.return_value = pd.DataFrame.from_dict(prediction)
     response = client.post("/predictions", json=model_input)
     assert response.status_code == 200
     assert response.json() == prediction
 
 
-def test_post_predictions_svg(mock_tutina_model, model_input, prediction):
+def test_post_predictions_svg(
+    client: TestClient, mock_tutina_model, model_input, prediction
+):
     SVG_CONTENT = b"<svg></svg>"
     mock_figure = Mock(savefig=lambda f, **_: f.write(SVG_CONTENT))
     mock_tutina_model.predict_single.return_value = pd.DataFrame.from_dict(prediction)
