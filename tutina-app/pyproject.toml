@@ -13,6 +13,7 @@ pydantic = "^2.10.3"
 tutina-lib = { path="../tutina-lib", develop=true }
 tutina-ai = { path="../tutina-ai", develop=true }
 dict-deep = "^4.1.2"
+pyjwt = "^2.10.1"
 
 
 [tool.poetry.group.dev.dependencies]

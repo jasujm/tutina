@@ -1,6 +1,7 @@
 import contextlib
 from unittest import mock
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
 
@@ -9,10 +10,23 @@ from tutina.app.app import app
 from tutina.lib.db import create_async_engine
 from tutina.lib.db import metadata as db_metadata
 
+TOKEN_SECRET = "secret"
+
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def token_secret(monkeypatch):
+    monkeypatch.setenv("TUTINA_TOKEN_SECRET", TOKEN_SECRET)
+    return TOKEN_SECRET
+
+
+@pytest.fixture
+def auth_token(token_secret):
+    return jwt.encode({}, token_secret, algorithm="HS256")
+
+
+@pytest.fixture
+def client(auth_token):
+    return TestClient(app, headers={"Authorization": f"Bearer {auth_token}"})
 
 
 @pytest.fixture

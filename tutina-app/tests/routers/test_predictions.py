@@ -6,8 +6,6 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from tutina.app.app import app
-
 
 def _fixture_from_file(filename):
     file_path = os.path.join(os.path.dirname(__file__), filename)
