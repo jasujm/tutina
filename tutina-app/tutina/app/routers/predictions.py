@@ -44,15 +44,17 @@ class TutinaModelInput(pydantic.BaseModel):
         FeaturesByName,
         pydantic.Field(
             description="History of measurements prior to the predicted timesteps",
-            example={
-                "temperature_bedroom": {
-                    "2020-01-01T07:00:00Z": 20.0,
-                    "2020-01-01T08:00:00Z": 21.0,
-                },
-                "temperature_outdoor": {
-                    "2020-01-01T07:00:00Z": -5.0,
-                    "2020-01-01T08:00:00Z": -4.0,
-                },
+            json_schema_extra={
+                "example": {
+                    "temperature_bedroom": {
+                        "2020-01-01T07:00:00Z": 20.0,
+                        "2020-01-01T08:00:00Z": 21.0,
+                    },
+                    "temperature_outdoor": {
+                        "2020-01-01T07:00:00Z": -5.0,
+                        "2020-01-01T08:00:00Z": -4.0,
+                    },
+                }
             },
         ),
     ]
@@ -60,15 +62,17 @@ class TutinaModelInput(pydantic.BaseModel):
         FeaturesByName,
         pydantic.Field(
             description="Control input for the predicted timesteps",
-            example={
-                "hvac_state_heat_radiator": {
-                    "2020-01-01T09:00:00Z": 1.0,
-                    "2020-01-01T10:00:00Z": 1.0,
-                },
-                "hvac_temperature_heat_radiator": {
-                    "2020-01-01T09:00:00Z": 21.0,
-                    "2020-01-01T10:00:00Z": 21.0,
-                },
+            json_schema_extra={
+                "example": {
+                    "hvac_state_heat_radiator": {
+                        "2020-01-01T09:00:00Z": 1.0,
+                        "2020-01-01T10:00:00Z": 1.0,
+                    },
+                    "hvac_temperature_heat_radiator": {
+                        "2020-01-01T09:00:00Z": 21.0,
+                        "2020-01-01T10:00:00Z": 21.0,
+                    },
+                }
             },
         ),
     ]
@@ -76,11 +80,13 @@ class TutinaModelInput(pydantic.BaseModel):
         Forecasts,
         pydantic.Field(
             description="Weather forecast for the predicted timesteps",
-            example={
-                "temperature": {
-                    "2020-01-01T08:00:00Z": -4.5,
-                    "2020-01-01T09:00:00Z": -3.5,
-                    "2020-01-01T10:00:00Z": -3.5,
+            json_schema_extra={
+                "example": {
+                    "temperature": {
+                        "2020-01-01T08:00:00Z": -4.5,
+                        "2020-01-01T09:00:00Z": -3.5,
+                        "2020-01-01T10:00:00Z": -3.5,
+                    }
                 }
             },
         ),
