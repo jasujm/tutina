@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import pydantic
 import requests
 
-from tutina.lib.models import Forecast
+from tutina.lib.types import Forecast
 
 from .settings import settings
 

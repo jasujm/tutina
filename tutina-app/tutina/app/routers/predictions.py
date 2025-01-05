@@ -7,6 +7,13 @@ import fastapi.responses as fresponses
 import pandas as pd
 import pydantic
 
+from tutina.lib.types import (
+    FeaturesByName,
+    FeatureTimeSeries,
+    ForecastFeatures,
+    TutinaModelInput,
+)
+
 from ..dependencies import get_tutina_model
 from ..model_wrapper import TutinaInputFeatures, TutinaModelWrapper
 
@@ -16,81 +23,7 @@ router = fastapi.APIRouter(
 )
 
 
-class FeatureTimeSeries(pydantic.RootModel):
-    """Time series of numeric data"""
-
-    root: dict[datetime, float]
-
-
-class FeaturesByName(pydantic.RootModel):
-    """Collection of feature time series by name"""
-
-    root: dict[str, FeatureTimeSeries]
-
-
-class Forecasts(pydantic.BaseModel):
-    """Weather forecast as time series"""
-
-    temperature: FeatureTimeSeries
-
-
 SVG_MEDIA_TYPE = "image/svg+xml"
-
-
-class TutinaModelInput(pydantic.BaseModel):
-    """Serialized input to the tutina model"""
-
-    history: Annotated[
-        FeaturesByName,
-        pydantic.Field(
-            description="History of measurements prior to the predicted timesteps",
-            json_schema_extra={
-                "example": {
-                    "temperature_bedroom": {
-                        "2020-01-01T07:00:00Z": 20.0,
-                        "2020-01-01T08:00:00Z": 21.0,
-                    },
-                    "temperature_outdoor": {
-                        "2020-01-01T07:00:00Z": -5.0,
-                        "2020-01-01T08:00:00Z": -4.0,
-                    },
-                }
-            },
-        ),
-    ]
-    control: Annotated[
-        FeaturesByName,
-        pydantic.Field(
-            description="Control input for the predicted timesteps",
-            json_schema_extra={
-                "example": {
-                    "hvac_state_heat_radiator": {
-                        "2020-01-01T09:00:00Z": 1.0,
-                        "2020-01-01T10:00:00Z": 1.0,
-                    },
-                    "hvac_temperature_heat_radiator": {
-                        "2020-01-01T09:00:00Z": 21.0,
-                        "2020-01-01T10:00:00Z": 21.0,
-                    },
-                }
-            },
-        ),
-    ]
-    forecasts: Annotated[
-        Forecasts,
-        pydantic.Field(
-            description="Weather forecast for the predicted timesteps",
-            json_schema_extra={
-                "example": {
-                    "temperature": {
-                        "2020-01-01T08:00:00Z": -4.5,
-                        "2020-01-01T09:00:00Z": -3.5,
-                        "2020-01-01T10:00:00Z": -3.5,
-                    }
-                }
-            },
-        ),
-    ]
 
 
 def _request_body_to_df(model_input: TutinaModelInput):

@@ -28,6 +28,8 @@ class DatabaseUrl(pydantic.BaseModel):
 
 
 class Settings(pydantic_settings.BaseSettings):
+    base_url: str
+    token_secret: pydantic.SecretStr
     database_url: typing.Union[DatabaseUrl, pydantic.SecretStr]
     owm_api_key: pydantic.SecretStr
     owm_coordinates: Coordinates

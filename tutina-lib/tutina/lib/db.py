@@ -1,6 +1,6 @@
 import os
-from enum import Enum
 import typing
+from enum import Enum
 
 from sqlalchemy import (
     Boolean,

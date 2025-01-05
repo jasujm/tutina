@@ -5,7 +5,7 @@ from datetime import datetime
 import pydantic
 from homeassistant_api import Client
 
-from tutina.lib.models import Hvac, Measurement, OpeningState
+from tutina.lib.types import Hvac, Measurement, OpeningState
 
 from .settings import settings
 

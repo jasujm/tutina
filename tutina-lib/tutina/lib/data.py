@@ -1,46 +1,13 @@
 import typing
 from datetime import datetime
 
-import pydantic
-
 from . import db, util
+from .types import Forecast, Hvac, Measurement, OpeningState
 
 if util.is_testing():
     IGNORE_PREFIX = "OR IGNORE"
 else:
     IGNORE_PREFIX = "IGNORE"
-
-
-class Measurement(pydantic.BaseModel):
-    """A single measurement from thermometer/hygrometer/barometer"""
-    location: str
-    temperature: typing.Optional[float]
-    humidity: typing.Optional[float]
-    pressure: typing.Optional[float]
-
-
-class Hvac(pydantic.BaseModel):
-    """HVAC device state"""
-    device: str
-    state: typing.Optional[db.HvacState]
-    temperature: typing.Optional[float]
-
-
-class OpeningState(pydantic.BaseModel):
-    """Door/window opening state"""
-    opening_type: db.OpeningType
-    opening: str
-    is_open: bool
-
-
-class Forecast(pydantic.BaseModel):
-    """Weather forecast at a single point of time"""
-    reference_timestamp: datetime
-    temperature: float
-    humidity: float
-    pressure: float
-    wind_speed: float
-    status: str
 
 
 async def store_measurements(
