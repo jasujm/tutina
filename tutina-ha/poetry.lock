@@ -1401,6 +1401,8 @@ develop = true
 [package.dependencies]
 aiohttp = "^3.11.11"
 orjson = "^3.10.13"
+pydantic = "^2.10.4"
+pydantic-settings = "^2.7.1"
 pyjwt = "^2.10.1"
 python-dotenv = "^1.0.1"
 sqlalchemy = {version = "^2.0.32", extras = ["aiomysql"]}

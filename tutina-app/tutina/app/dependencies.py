@@ -8,9 +8,9 @@ import tomllib
 from dict_deep import deep_get
 
 from tutina.lib.db import create_async_engine
+from tutina.lib.settings import Settings
 
 from .model_wrapper import TutinaModelWrapper
-from .settings import Settings
 
 logger = logging.getLogger(__name__)
 
