@@ -1076,6 +1076,18 @@ files = [
 ]
 
 [[package]]
+name = "xdg-base-dirs"
+version = "6.0.2"
+description = "Variables defined by the XDG Base Directory Specification"
+optional = false
+python-versions = "<4.0,>=3.10"
+groups = ["main"]
+files = [
+    {file = "xdg_base_dirs-6.0.2-py3-none-any.whl", hash = "sha256:3c01d1b758ed4ace150ac960ac0bd13ce4542b9e2cdf01312dcda5012cfebabe"},
+    {file = "xdg_base_dirs-6.0.2.tar.gz", hash = "sha256:950504e14d27cf3c9cb37744680a43bf0ac42efefc4ef4acf98dc736cab2bced"},
+]
+
+[[package]]
 name = "yarl"
 version = "1.18.3"
 description = "Yet another URL library"
@@ -1175,4 +1187,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "bf4b5a8a782828a0f80caf94ca093882c0103e20a513bbed705f34342ca05ec3"
+content-hash = "a8a7060d2d8c963139ed393c6948cf0f13fb0f277f4c3977a640addff43ce1a3"

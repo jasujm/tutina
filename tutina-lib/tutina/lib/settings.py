@@ -9,20 +9,27 @@ from typing import Annotated, Any, ClassVar, Type
 
 import pydantic
 import pydantic_settings
+import xdg_base_dirs as xbd
 
 _DEFAULT_CONFIG_FILE_PATHS = [
-    Path.home() / ".config/tutina.toml",
-    Path("/etc/tutina.toml"),
+    d / "tutina.toml"
+    for d in [
+        xbd.xdg_config_home(),
+        *xbd.xdg_config_dirs(),
+        Path("/etc"),
+    ]
 ]
 
 _DEFAULT_DATA_DIR_PATHS = [
-    Path.home() / ".local/share",
-    Path("/usr/local/share"),
-    Path("/usr/share"),
+    d / "tutina"
+    for d in [
+        xbd.xdg_data_home(),
+        *xbd.xdg_data_dirs(),
+    ]
 ]
 
-_DEFAULT_DATA_FILENAME = "tutina/data.parquet"
-_DEFAULT_MODEL_FILENAME = "tutina/model.keras"
+_DEFAULT_DATA_FILENAME = "data.parquet"
+_DEFAULT_MODEL_FILENAME = "model.keras"
 
 
 def _get_config_file_paths():
