@@ -16,11 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 @functools.cache
-def _load_config(config_file: str):
-    logger.info("Loading configuration from %s", config_file)
-    with open(config_file, "rb") as f:
-        config_data = tomllib.load(f)
-    return Settings(**config_data)
+def _load_config():
+    return Settings()
 
 
 @functools.cache
@@ -35,8 +32,7 @@ def _create_engine(database_url: str):
 
 
 def get_config() -> Settings:
-    config_file = os.environ["TUTINA_CONFIG_FILE"]
-    return _load_config(config_file)
+    return _load_config()
 
 
 def get_database_engine(config: Annotated[Settings, fastapi.Depends(get_config)]):
