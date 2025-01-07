@@ -1,3 +1,4 @@
+from pathlib import Path
 import typing
 
 import pandas as pd
@@ -12,10 +13,10 @@ class TutinaModelWrapper:
     _model: "TutinaModel"
 
     @classmethod
-    def from_model_file(cls, model_file):
+    def from_model_file(cls, model_file: Path):
         from tutina.ai import model as m
 
-        return cls(m.load_model(model_file))
+        return cls(m.load_model(str(model_file)))
 
     @staticmethod
     def plot_prediction(history: pd.DataFrame, prediction: pd.DataFrame):

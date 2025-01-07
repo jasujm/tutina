@@ -1,11 +1,11 @@
 import functools
 import logging
 import os
+from pathlib import Path
 from typing import Annotated
 
 import fastapi
 import tomllib
-from dict_deep import deep_get
 
 from tutina.lib.db import create_async_engine
 from tutina.lib.settings import Settings
@@ -21,7 +21,7 @@ def _load_config():
 
 
 @functools.cache
-def _load_tutina_model(model_file: str):
+def _load_tutina_model(model_file: Path):
     logger.info("Loading model from from %s", model_file)
     return TutinaModelWrapper.from_model_file(model_file)
 

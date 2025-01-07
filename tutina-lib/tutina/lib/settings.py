@@ -4,7 +4,7 @@ dotenv.load_dotenv()
 
 import os
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Type, ClassVar
 
 import pydantic
 import pydantic_settings
@@ -29,8 +29,8 @@ class DatabaseSettings(pydantic.BaseModel):
 
 
 class ModelSettings(pydantic.BaseModel):
-    data_file: str | None = None
-    model_file: str | None = None
+    data_file: Path | None = None
+    model_file: Path | None = None
     config: dict[str, Any] = {}
 
 
@@ -46,6 +46,12 @@ class Settings(pydantic_settings.BaseSettings):
     model: ModelSettings = ModelSettings()
     token_secret: pydantic.SecretStr
 
+    _toml_file_override: ClassVar[Path | str | None] = None
+
+    @classmethod
+    def set_config_file(cls, path: Path | str):
+        cls._toml_file_override = path
+
     @classmethod
     def settings_customise_sources(
         cls,
@@ -55,10 +61,17 @@ class Settings(pydantic_settings.BaseSettings):
         dotenv_settings: pydantic_settings.PydanticBaseSettingsSource,
         file_secret_settings: pydantic_settings.PydanticBaseSettingsSource,
     ):
+        toml_settings = (
+            pydantic_settings.TomlConfigSettingsSource(
+                settings_cls, cls._toml_file_override
+            )
+            if cls._toml_file_override
+            else pydantic_settings.TomlConfigSettingsSource(settings_cls)
+        )
         return (
             init_settings,
             env_settings,
             dotenv_settings,
             file_secret_settings,
-            pydantic_settings.TomlConfigSettingsSource(settings_cls),
+            toml_settings,
         )
