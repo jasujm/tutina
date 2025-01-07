@@ -3,13 +3,13 @@ import sqlalchemy as sa
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 
-from tutina.lib import db, models
+from tutina.lib import db, types
 
 
 @pytest.fixture
-def measurements(faker) -> list[models.Measurement]:
+def measurements(faker) -> list[types.Measurement]:
     return [
-        models.Measurement(
+        types.Measurement(
             location=faker.pystr(),
             temperature=faker.pyfloat(),
             humidity=faker.pyfloat(),
@@ -20,9 +20,9 @@ def measurements(faker) -> list[models.Measurement]:
 
 
 @pytest.fixture
-def hvacs(faker) -> list[models.Hvac]:
+def hvacs(faker) -> list[types.Hvac]:
     return [
-        models.Hvac(
+        types.Hvac(
             device=faker.pystr(),
             state=faker.enum(db.HvacState),
             temperature=faker.pyfloat(),
@@ -32,9 +32,9 @@ def hvacs(faker) -> list[models.Hvac]:
 
 
 @pytest.fixture
-def opening_states(faker) -> list[models.OpeningState]:
+def opening_states(faker) -> list[types.OpeningState]:
     return [
-        models.OpeningState(
+        types.OpeningState(
             opening_type=faker.enum(db.OpeningType),
             opening=faker.pystr(),
             is_open=faker.pybool(),
@@ -44,9 +44,9 @@ def opening_states(faker) -> list[models.OpeningState]:
 
 
 @pytest.fixture
-def forecasts(faker) -> list[models.Forecast]:
+def forecasts(faker) -> list[types.Forecast]:
     return [
-        models.Forecast(
+        types.Forecast(
             reference_timestamp=faker.date_time(),
             temperature=faker.pyfloat(),
             humidity=faker.pyfloat(),
@@ -64,7 +64,7 @@ async def test_post_measurements(client, measurements, mock_database_engine):
     assert res.status_code == 204
     async with mock_database_engine.begin() as connection:
         measurements_in_db = [
-            models.Measurement(**row)
+            types.Measurement(**row)
             for row in (
                 await connection.execute(
                     sa.select(
@@ -90,7 +90,7 @@ async def test_post_hvacs(client, hvacs, mock_database_engine):
     assert res.status_code == 204
     async with mock_database_engine.begin() as connection:
         hvacs_in_db = [
-            models.Hvac(**row)
+            types.Hvac(**row)
             for row in (
                 await connection.execute(
                     sa.select(
@@ -115,7 +115,7 @@ async def test_post_opening_states(client, opening_states, mock_database_engine)
     assert res.status_code == 204
     async with mock_database_engine.begin() as connection:
         opening_states_in_db = [
-            models.OpeningState(**row)
+            types.OpeningState(**row)
             for row in (
                 await connection.execute(
                     sa.select(
@@ -140,7 +140,7 @@ async def test_post_forecasts(client, forecasts, mock_database_engine):
     assert res.status_code == 204
     async with mock_database_engine.begin() as connection:
         forecasts_in_db = [
-            models.Forecast(**row)
+            types.Forecast(**row)
             for row in (
                 await connection.execute(
                     sa.select(
