@@ -43,7 +43,9 @@ def main(
 
     data_file = settings.model.data_file
     print(f"Loading data from {data_file}")
-    data = m.load_data_with_cache(str(data_file), settings.database.url)
+    data = m.load_data_with_cache(
+        str(data_file), settings.database.url.get_secret_value()
+    )
     model_config = settings.model.config
     data = m.clean_data(data, model_config)
     features = m.get_features(data, model_config)

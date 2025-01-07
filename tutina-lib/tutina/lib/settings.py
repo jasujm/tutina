@@ -2,9 +2,10 @@ import dotenv
 
 dotenv.load_dotenv()
 
+import functools
 import os
 from pathlib import Path
-from typing import Any, Type, ClassVar
+from typing import Annotated, Any, ClassVar, Type
 
 import pydantic
 import pydantic_settings
@@ -13,6 +14,15 @@ _DEFAULT_CONFIG_FILE_PATHS = [
     Path.home() / ".config/tutina.toml",
     Path("/etc/tutina.toml"),
 ]
+
+_DEFAULT_DATA_DIR_PATHS = [
+    Path.home() / ".local/share",
+    Path("/usr/local/share"),
+    Path("/usr/share"),
+]
+
+_DEFAULT_DATA_FILENAME = "tutina/data.parquet"
+_DEFAULT_MODEL_FILENAME = "tutina/model.keras"
 
 
 def _get_config_file_paths():
@@ -24,13 +34,24 @@ def _get_config_file_paths():
     )
 
 
+def _get_data_file_path(filename):
+    for dir_path in _DEFAULT_DATA_DIR_PATHS:
+        if dir_path.is_dir() and os.access(dir_path, os.R_OK | os.W_OK):
+            return dir_path / filename
+    return None
+
+
 class DatabaseSettings(pydantic.BaseModel):
     url: pydantic.SecretStr
 
 
 class ModelSettings(pydantic.BaseModel):
-    data_file: Path | None = None
-    model_file: Path | None = None
+    data_file: Path | None = pydantic.Field(
+        default_factory=functools.partial(_get_data_file_path, _DEFAULT_DATA_FILENAME)
+    )
+    model_file: Path | None = pydantic.Field(
+        default_factory=functools.partial(_get_data_file_path, _DEFAULT_MODEL_FILENAME)
+    )
     config: dict[str, Any] = {}
 
 
