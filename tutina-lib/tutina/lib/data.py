@@ -18,10 +18,10 @@ async def store_measurements(
         .prefix_with(IGNORE_PREFIX)
         .values([{"slug": measurement.location} for measurement in measurements]),
     )
-    locations = dict(
-        (
-            await connection.execute(db.select(db.locations.c.slug, db.locations.c.id))
-        ).fetchall()
+    locations: dict[str, str] = dict(
+        (await connection.execute(db.select(db.locations.c.slug, db.locations.c.id)))
+        .tuples()
+        .fetchall()
     )
     await connection.execute(
         db.measurements.insert(),
@@ -45,12 +45,14 @@ async def store_hvacs(
         .prefix_with(IGNORE_PREFIX)
         .values([{"slug": hvac.device} for hvac in hvacs]),
     )
-    devices = dict(
+    devices: dict[str, str] = dict(
         (
             await connection.execute(
                 db.select(db.hvac_devices.c.slug, db.hvac_devices.c.id)
             )
-        ).fetchall()
+        )
+        .tuples()
+        .fetchall()
     )
     await connection.execute(
         db.hvacs.insert(),
@@ -83,7 +85,9 @@ async def store_opening_states(
             await connection.execute(
                 db.select(db.openings.c.type, db.openings.c.slug, db.openings.c.id)
             )
-        ).fetchall()
+        )
+        .tuples()
+        .fetchall()
     }
     await connection.execute(
         db.opening_states.insert(),

@@ -2,11 +2,11 @@ import contextlib
 import enum
 import functools
 from datetime import datetime, timedelta, timezone
-import orjson
 from typing import Iterable
 
 import aiohttp
 import jwt
+import orjson
 
 from .types import Forecast, Hvac, Measurement, OpeningState
 
@@ -56,7 +56,7 @@ class TutinaClient:
     def _get_headers(self):
         return {
             "Authorization": f"Bearer {self._generate_token()}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def _generate_token(self):
