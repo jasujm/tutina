@@ -1,5 +1,5 @@
-from pathlib import Path
 import typing
+from pathlib import Path
 
 import pandas as pd
 
