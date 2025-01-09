@@ -1,7 +1,7 @@
 import fastapi
 import jwt
 
-from tutina.app.app import app
+from tutina.app import app
 
 ENDPOINT = "/auth/endpoint"
 

@@ -5,8 +5,8 @@ import jwt
 import pytest
 from fastapi.testclient import TestClient
 
+from tutina.app import app
 from tutina.app import dependencies as dep
-from tutina.app.app import app
 from tutina.lib.db import create_async_engine
 from tutina.lib.db import metadata as db_metadata
 
