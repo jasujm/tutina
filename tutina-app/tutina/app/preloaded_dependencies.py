@@ -1,4 +1,3 @@
-import asyncio
 import contextlib
 import functools
 from typing import TYPE_CHECKING, Any, AsyncIterator, Awaitable, Callable
@@ -25,15 +24,11 @@ class PreloadedDependencies:
 
         return _func_from_cache
 
-    async def _preload_dependency(self, dependency: PreloadFunction):
-        self._cache[dependency] = await self._exit_stack.enter_async_context(
-            dependency()
-        )
-
     @contextlib.asynccontextmanager
     async def preload(self, _app: "fastapi.FastAPI") -> AsyncIterator[None]:
         async with self._exit_stack:
-            async with asyncio.TaskGroup() as tg:
-                for dependency in self._dependencies:
-                    tg.create_task(self._preload_dependency(dependency))
+            for dependency in self._dependencies:
+                self._cache[dependency] = await self._exit_stack.enter_async_context(
+                    dependency()
+                )
             yield
