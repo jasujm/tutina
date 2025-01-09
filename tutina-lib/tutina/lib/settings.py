@@ -73,6 +73,7 @@ class Settings(pydantic_settings.BaseSettings):
     database: DatabaseSettings
     model: ModelSettings = ModelSettings()
     token_secret: pydantic.SecretStr
+    logging: dict[str, Any] | None = None
 
     _toml_file_override: ClassVar[Path | str | None] = None
 
