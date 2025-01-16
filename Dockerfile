@@ -46,4 +46,4 @@ RUN set -x &&                     \
     ./.venv/bin/pip install ./dist/*.whl
 
 ENTRYPOINT ["/usr/src/tutina/tutina-app/.venv/bin/python"]
-CMD ["-m", "uvicorn", "tutina.app:app"]
+CMD ["-m", "uvicorn", "tutina.app:app", "--host=0.0.0.0", "--port=80"]

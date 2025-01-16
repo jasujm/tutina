@@ -1,0 +1,22 @@
+version: "3"
+services:
+  tutina:
+    image: "jasujm/tutina"
+    build: "."
+    ports:
+      - "8000:80"
+    env_file:
+      - "./.env.tutina"
+    depends_on:
+      - "db"
+    volumes:
+      - "${TUTINA_CONFIG_FILE}:/etc/tutina.toml:ro"
+      - "${TUTINA_DATA_DIR}:/usr/share/tutina:rw"
+  db:
+    image: "mariadb:11"
+    volumes:
+      - "dbdata:/var/lib/mysql:rw"
+    env_file:
+      - "./.env.db"
+volumes:
+  dbdata:
