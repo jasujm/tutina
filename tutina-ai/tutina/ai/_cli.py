@@ -42,7 +42,7 @@ def main(
     settings = Settings()
     setup_logging(settings)
 
-    data_file = settings.model.data_file
+    data_file = settings.model.get_data_file_path(write=True)
     logger.info(f"Loading data from %s", data_file)
     data = m.load_data_with_cache(
         str(data_file), settings.database.url.get_secret_value()
@@ -51,7 +51,7 @@ def main(
     data = m.clean_data(data, model_config)
     features = m.get_features(data, model_config)
 
-    model_file = settings.model.model_file
+    model_file = settings.model.get_model_file_path(write=True)
     if model_file and model_file.is_file():
         logger.info("Loading model from %s", model_file)
         model = m.load_model(str(model_file))

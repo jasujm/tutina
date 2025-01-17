@@ -15,7 +15,7 @@ services:
   db:
     image: "mariadb:11"
     volumes:
-      - "dbdata:/var/lib/mysql:rw"
+      - "dbdata:/var/lib/mysql"
     env_file:
       - "./.env.db"
 volumes:

@@ -49,7 +49,7 @@ async def get_database_engine() -> AsyncIterator[AsyncEngine]:
 @preloaded_dependencies.register
 @contextlib.asynccontextmanager
 async def get_tutina_model() -> AsyncIterator[TutinaModelWrapper]:
-    model_file = get_config().model.model_file
+    model_file = get_config().model.get_model_file_path(write=False)
     logger = get_logger()
     logger.info("Loading model from from %s", model_file)
     loop = asyncio.get_event_loop()

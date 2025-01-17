@@ -41,25 +41,41 @@ def _get_config_file_paths():
     )
 
 
-def _get_data_file_path(filename):
+def _get_data_file_path_for_read(filename):
     for dir_path in _DEFAULT_DATA_DIR_PATHS:
-        if dir_path.is_dir() and os.access(dir_path, os.R_OK | os.W_OK):
+        if dir_path.is_dir() and os.access(dir_path, os.R_OK):
             return dir_path / filename
     return None
 
+def _get_data_file_path_for_write(filename):
+    dir_path = _DEFAULT_DATA_DIR_PATHS[0]
+    if not dir_path.is_dir():
+        os.mkdir(dir_path, 0o700)
+    return dir_path / filename
+
+def _get_data_file_path(filename: str, write: bool):
+    if write:
+        return _get_data_file_path_for_write(filename)
+    return _get_data_file_path_for_read(filename)
 
 class DatabaseSettings(pydantic.BaseModel):
     url: pydantic.SecretStr
 
 
 class ModelSettings(pydantic.BaseModel):
-    data_file: Path | None = pydantic.Field(
-        default_factory=functools.partial(_get_data_file_path, _DEFAULT_DATA_FILENAME)
-    )
-    model_file: Path | None = pydantic.Field(
-        default_factory=functools.partial(_get_data_file_path, _DEFAULT_MODEL_FILENAME)
-    )
+    data_file: Path | None = None
+    model_file: Path | None = None
     config: dict[str, Any] = {}
+
+    def get_data_file_path(self, *, write: bool) -> Path | None:
+        if self.data_file:
+            return self.data_file
+        return _get_data_file_path(_DEFAULT_DATA_FILENAME, write)
+
+    def get_model_file_path(self, *, write: bool) -> Path | None:
+        if self.model_file:
+            return self.model_file
+        return _get_data_file_path(_DEFAULT_MODEL_FILENAME, write)
 
 
 class Settings(pydantic_settings.BaseSettings):
