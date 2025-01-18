@@ -5,11 +5,18 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:8080"
+      - "--providers.file.directory=/etc/tutina"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.asdefault=true"
     ports:
-      - "80:8080"
+      - "80:80"
+      - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.yml:/etc/tutina/traefik.yml:ro"
   app:
     image: "jasujm/tutina"
     build: "."
@@ -22,7 +29,9 @@ services:
       - "./env/data:/usr/share/tutina:ro"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.entrypoints=web"
+      - "traefik.http.routers.app.tls=true"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.middlewares=securityHeaders@file"
       - "traefik.http.routers.app.rule=PathPrefix(`/`)"
   db:
     image: "mariadb:11"
