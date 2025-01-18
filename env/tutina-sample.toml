@@ -1,0 +1,11 @@
+# rename to tutina.toml with actual values
+
+token_secret = "replace with better secret"
+
+[database]
+url = "mysql+aiomysql://user@server/tutina"
+
+[model.config]
+rooms = []
+hvac_devices = []
+openings = []
