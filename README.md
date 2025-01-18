@@ -3,10 +3,11 @@
 Tutina (Finnish for *shivering*) is a home automation tool for predicting and
 controlling indoor temperature.
 
-Tutina consists of three components
- - `tutina-ai`, a machine learning model to predict indoor temperature
- - `tutina-app`, a webapp serving the predictions
- - `tutina-ha`, a Home Assistant addon to interact with the model
+Tutina consists of four Python packages
+ - `tutina.lib`, common utilities
+ - `tutina.ai`, a machine learning model to predict indoor temperature
+ - `tutina.app`, a web application serving the predictions
+ - `tutina.ha`, a Home Assistant add-on to interact with the application
 
 Currently it's only collecting data and I've started developing the model. In
 the future, I want to use the model to answer questions like:

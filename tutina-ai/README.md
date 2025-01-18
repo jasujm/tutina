@@ -1,3 +1,3 @@
 # Tutina AI
 
-Machine learning model for predicting and controlling indoor temperature
+A machine learning model for predicting and controlling indoor temperature

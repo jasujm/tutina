@@ -1,3 +1,3 @@
 # Tutina Home Assistant
 
-Home Assistant addon to interact with Tutina AI
+A Home Assistant addon to interact with the Tutina application
