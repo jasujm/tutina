@@ -1,10 +1,18 @@
 version: "3"
 services:
-  tutina:
+  traefik:
+    image: "traefik:v3.3"
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:8080"
+    ports:
+      - "80:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  app:
     image: "jasujm/tutina"
     build: "."
-    ports:
-      - "8000:80"
     env_file:
       - "./.env.tutina"
     depends_on:
@@ -12,6 +20,10 @@ services:
     volumes:
       - "${TUTINA_CONFIG_FILE}:/etc/tutina.toml:ro"
       - "${TUTINA_DATA_DIR}:/usr/share/tutina:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.entrypoints=web"
+      - "traefik.http.routers.app.rule=PathPrefix(`/`)"
   db:
     image: "mariadb:11"
     volumes:
