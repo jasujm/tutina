@@ -1,0 +1,8 @@
+**
+!Dockerfile
+!*/run.sh
+!*/README.md
+!*/pyproject.toml
+!*/poetry.lock
+!*/tutina
+**/__pycache__
