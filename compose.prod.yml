@@ -1,0 +1,22 @@
+services:
+  traefik:
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/tutina"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.asdefault=true"
+      - "--certificatesresolvers.myresolver.acme.email=$TUTINA_ADMIN_EMAIL"
+      - "--certificatesresolvers.myresolver.acme.storage=/root/.local/share/acme.json"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+    volumes:
+      - "traefikdata:/root/.local/share:rw"
+  app:
+    labels:
+      - "traefik.http.routers.app.tls.certresolver=myresolver"
+volumes:
+  traefikdata:

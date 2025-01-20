@@ -1,0 +1,13 @@
+services:
+  app:
+    depends_on:
+     - "db"
+  db:
+    restart: "always"
+    image: "mariadb:11"
+    volumes:
+      - "dbdata:/var/lib/mysql"
+    env_file:
+      - "./.env.db"
+volumes:
+  dbdata:
