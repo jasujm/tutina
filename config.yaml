@@ -10,11 +10,15 @@ options:
   owm_coordinates:
     lon: null
     lat: null
+  tutina_base_url: null
+  tutina_token_secret: null
 schema:
   owm_api_key: str
   owm_coordinates:
     lon: float
     lat: float
+  tutina_base_url: url
+  tutina_token_secret: str
 homeassistant_api: true
 services:
   - mysql:need

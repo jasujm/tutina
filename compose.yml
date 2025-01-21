@@ -1,3 +1,5 @@
+# Base docker compose file for the webapp
+
 services:
   traefik:
     restart: "always"
@@ -20,7 +22,9 @@ services:
   app:
     restart: "always"
     image: "jasujm/tutina"
-    build: "."
+    build:
+      context: "."
+      dockerfile: "Dockerfile.app"
     env_file:
       - "./.env.tutina"
     volumes:
