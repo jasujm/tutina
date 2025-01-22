@@ -1,5 +1,9 @@
 **
 !Dockerfile
+!tutina-lib
+!tutina-ha
+!tutina-ai
+!tutina-app
 !*/run.sh
 !*/README.md
 !*/pyproject.toml

@@ -1,20 +1,20 @@
 # Dockerfile for the Tutina HA addon
 # Needs to be called just Dockerfile because of the HA addon build system
 
-FROM homeassistant/aarch64-base-debian:bookworm AS base
+FROM ghcr.io/home-assistant/aarch64-base-python AS base
 
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /usr/src/tutina
 
-RUN set -x &&                                             \
-    apt-get -y update &&                                  \
-    apt-get install -y python3 python3-wheel python3-pip
+RUN set -x &&                     \
+    apk update && apk upgrade &&  \
+    pip install wheel
 
 FROM base AS builder
 
 RUN set -ex &&                                 \
-    apt-get install -y pipx &&                 \
+    pip install pipx &&                 \
     pipx install poetry==2.0.0 &&              \
     mkdir -p ./tutina-lib/tutina/lib &&        \
     touch ./tutina-lib/tutina/lib/__init__.py
@@ -41,7 +41,6 @@ COPY --from=builder /usr/src/tutina/tutina-ha/.venv ./tutina-ha/.venv
 COPY --from=builder /usr/src/tutina/tutina-ha/dist ./tutina-ha/dist
 
 RUN set -x && \
-    apt-get install -y pkg-config libmariadb-dev && \
     cd ./tutina-ha && \
     ./.venv/bin/pip install ./dist/*.whl
 

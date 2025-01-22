@@ -490,7 +490,6 @@ description = "Lightweight in-process concurrent programming"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "python_version < \"3.13\" and (platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\")"
 files = [
     {file = "greenlet-3.1.1-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:0bbae94a29c9e5c7e4a2b7f0aae5c17e8e90acbfd3bf6270eeba60c39fce3563"},
     {file = "greenlet-3.1.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0fde093fb93f35ca72a556cf72c92ea3ebfda3d79fc35bb19fbe685853869a83"},
@@ -1468,10 +1467,7 @@ files = [
 
 [package.dependencies]
 aiomysql = {version = ">=0.2.0", optional = true, markers = "extra == \"aiomysql\""}
-greenlet = [
-    {version = "!=0.4.17", markers = "python_version < \"3.13\" and (platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\")"},
-    {version = "!=0.4.17", optional = true, markers = "python_version < \"3.13\" and (platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\") or extra == \"aiomysql\""},
-]
+greenlet = {version = "!=0.4.17", optional = true, markers = "extra == \"aiomysql\""}
 typing-extensions = ">=4.6.0"
 
 [package.extras]
@@ -1504,7 +1500,7 @@ name = "tutina-lib"
 version = "0.1.0"
 description = "Common libraries for the tutina project"
 optional = false
-python-versions = "^3.11"
+python-versions = "^3.12"
 groups = ["main"]
 files = []
 develop = true
@@ -1680,5 +1676,5 @@ propcache = ">=0.2.0"
 
 [metadata]
 lock-version = "2.1"
-python-versions = "^3.11"
-content-hash = "c0a3a889ab8275bc85d0b436a044b4cfadf254ff09b2edf8009f6f4d1e20fd9e"
+python-versions = "^3.13"
+content-hash = "66c523ed1f2de81c42c3c928b54cee5eaea90b40612c1855f89edcd04461a745"
