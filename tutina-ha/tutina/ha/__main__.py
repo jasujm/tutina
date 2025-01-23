@@ -33,10 +33,22 @@ def log_errors(func: typing.Callable):
         try:
             return func(*args, **kwargs)
         except Exception:
-            logger.exception(f"Error when running {func.__name__}")
+            logger.exception("Error when running %s", func.__name__)
 
     return wrapper
 
+
+async def _log_errors_async(aw: typing.Awaitable) -> typing.Awaitable:
+    try:
+        return await aw
+    except Exception:
+        logger.exception("Error when running %r", aw)
+
+def get_scheduler(tg: asyncio.TaskGroup):
+    def _schedule(aw: typing.Awaitable):
+        print("Creating task", aw, tg)
+        return tg.create_task(_log_errors_async(aw))
+    return _schedule
 
 @log_errors
 def fetch_and_store_measurements():
@@ -54,12 +66,13 @@ def fetch_and_store_measurements():
             ) as client,
             asyncio.TaskGroup() as tg,
         ):
-            tg.create_task(store_measurements(measurements, connection=connection))
-            tg.create_task(store_hvacs(hvacs, connection=connection))
-            tg.create_task(store_opening_states(opening_states, connection=connection))
-            tg.create_task(client.submit_measurements(measurements))
-            tg.create_task(client.submit_hvacs(hvacs))
-            tg.create_task(client.submit_opening_states(opening_states))
+            schedule = get_scheduler(tg)
+            schedule(store_measurements(measurements, connection=connection))
+            schedule(store_hvacs(hvacs, connection=connection))
+            schedule(store_opening_states(opening_states, connection=connection))
+            schedule(client.submit_measurements(measurements))
+            schedule(client.submit_hvacs(hvacs))
+            schedule(client.submit_opening_states(opening_states))
         await engine.dispose()
 
     asyncio.run(_store_measurements())
@@ -78,8 +91,9 @@ def fetch_and_store_forecasts():
             ) as client,
             asyncio.TaskGroup() as tg,
         ):
-            tg.create_task(store_forecasts(forecasts, connection=connection))
-            tg.create_task(client.submit_forecasts(forecasts))
+            schedule = get_scheduler(tg)
+            schedule(store_forecasts(forecasts, connection=connection))
+            schedule(client.submit_forecasts(forecasts))
         await engine.dispose()
 
     asyncio.run(_store_forecasts())
