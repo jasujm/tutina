@@ -44,11 +44,13 @@ async def _log_errors_async(aw: typing.Awaitable) -> typing.Awaitable:
     except Exception:
         logger.exception("Error when running %r", aw)
 
+
 def get_scheduler(tg: asyncio.TaskGroup):
     def _schedule(aw: typing.Awaitable):
-        print("Creating task", aw, tg)
         return tg.create_task(_log_errors_async(aw))
+
     return _schedule
+
 
 @log_errors
 def fetch_and_store_measurements():

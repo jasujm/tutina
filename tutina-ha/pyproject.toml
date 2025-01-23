@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tutina"
-version = "0.4"
+version = "0.4.1"
 description = "Home Assistant addon for predicting and controlling indoor temperature"
 authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
 readme = "README.md"
