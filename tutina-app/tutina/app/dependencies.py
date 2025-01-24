@@ -3,7 +3,7 @@ import contextlib
 import logging
 from typing import AsyncIterator
 
-from tutina.lib.db import AsyncEngine, create_async_engine
+from tutina.lib.db import AsyncEngine, create_async_engine, metadata as db_metadata
 from tutina.lib.settings import Settings
 
 from .model_wrapper import TutinaModelWrapper
@@ -42,6 +42,8 @@ async def get_database_engine() -> AsyncIterator[AsyncEngine]:
     logger = get_logger()
     logger.info("Loading database engine with %s", database_config)
     engine = create_async_engine(database_config.url.get_secret_value())
+    async with engine.begin() as connection:
+        await connection.run_sync(db_metadata.create_all)
     yield engine
     await engine.dispose()
 
