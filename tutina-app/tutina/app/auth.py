@@ -22,7 +22,7 @@ def authorize(
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
             detail="Unsupported authentication type",
         )
-    token_secret = config.token_secret.get_secret_value()
+    token_secret = config.tutina.token_secret.get_secret_value()
     try:
         return jwt.decode(credentials.credentials, token_secret, algorithms=ALGORITHMS)
     except jwt.InvalidTokenError as e:

@@ -5,9 +5,8 @@ from datetime import datetime
 import pydantic
 from homeassistant_api import Client
 
+from tutina.lib.settings import HomeAssistantSettings
 from tutina.lib.types import Hvac, Measurement, OpeningState
-
-from .settings import settings
 
 _measurement_entity_re = re.compile(
     r"^weather_(?P<location>[a-z0-9_-]+)_(temperature|humidity|pressure)$"
@@ -18,15 +17,13 @@ _hvac_entity_re = re.compile(r"^(?P<device>heat_pump_[a-z0-9_-]+)$")
 _opening_re = re.compile(r"^(?P<type>door|window)_(?P<opening>[a-z0-9_-]+)_opening$")
 
 
-_client = Client(
-    str(settings.homeassistant_api_url),
-    settings.homeassistant_api_token.get_secret_value(),
-)
-
-
 class EntityParser:
-    def __init__(self):
-        self._entities = _client.get_entities()
+    def __init__(self, settings: HomeAssistantSettings):
+        client = Client(
+            str(settings.api_url),
+            settings.api_token.get_secret_value(),
+        )
+        self._entities = client.get_entities()
 
     def get_measurements(self) -> list[Measurement]:
         sensor_entities = self._entities["sensor"].entities

@@ -4,21 +4,22 @@ from datetime import datetime, timezone
 import pydantic
 import requests
 
+from tutina.lib.settings import OwmSettings
 from tutina.lib.types import Forecast
 
-from .settings import settings
-
 _DEFAULT_PARAMS = {
-    "appid": settings.owm_api_key.get_secret_value(),
     "units": "metric",
-    **settings.owm_coordinates.dict(),
 }
 
 
-def fetch_forecasts() -> list[Forecast]:
+def fetch_forecasts(owm_settings: OwmSettings) -> list[Forecast]:
     forecasts = requests.get(
         "https://api.openweathermap.org/data/3.0/onecall",
-        params=_DEFAULT_PARAMS,
+        params={
+            "appid": owm_settings.api_key.get_secret_value(),
+            **_DEFAULT_PARAMS,
+            **owm_settings.coordinates.model_dump(),
+        },
         timeout=30,
     ).json()
     return [

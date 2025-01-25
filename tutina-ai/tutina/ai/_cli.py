@@ -8,6 +8,7 @@ import typer
 from tutina.lib.settings import Settings
 
 app = typer.Typer()
+logger = logging.getLogger(__name__)
 
 try:
     import IPython
@@ -18,9 +19,6 @@ except ImportError:
 
     def console():
         pass
-
-
-logger = logging.getLogger(__name__)
 
 
 @app.command()
@@ -39,9 +37,7 @@ def train(
 
     data_file = settings.model.get_data_file_path(write=True)
     logger.info(f"Loading data from %s", data_file)
-    data = m.load_data_with_cache(
-        str(data_file), settings.database.url.get_secret_value()
-    )
+    data = m.load_data_with_cache(str(data_file), settings.database.get_url())
     model_config = settings.model.config
     data = m.clean_data(data, model_config)
     features = m.get_features(data, model_config)

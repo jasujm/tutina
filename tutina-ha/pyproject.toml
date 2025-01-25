@@ -1,23 +1,34 @@
-[tool.poetry]
+[project]
 name = "tutina"
 version = "0.4.1"
 description = "Home Assistant addon for predicting and controlling indoor temperature"
-authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+authors = [
+  { name = "Jaakko Moisio", email = "jaakko@moisio.fi" }
+]
 readme = "README.md"
+
+[project.scripts]
+tutina = "tutina.lib._cli:app"
+
+[tool.poetry]
+packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
 python = "^3.13"
-click = "^8.1"
 homeassistant-api = "^4.2"
 pydantic = {version = "^2.8", extras = ["dotenv"]}
 schedule = "^1.2"
 requests = "^2.32.3"
 pydantic-settings = "^2.5.2"
 tutina-lib = { path="../tutina-lib", develop=true }
+typer = "^0.15.1"
 
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.3"
+
+[project.entry-points.tutina_cli]
+ha = "tutina.ha._cli:app"
 
 [build-system]
 requires = ["poetry-core"]

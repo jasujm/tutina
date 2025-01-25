@@ -3,10 +3,9 @@ import functools
 import logging
 import time
 import typing
-from datetime import datetime
 
-import click
 import schedule
+import typer
 
 from tutina.lib import db
 from tutina.lib.client import create_client
@@ -16,14 +15,12 @@ from tutina.lib.data import (
     store_measurements,
     store_opening_states,
 )
+from tutina.lib.settings import Settings
 
 from .forecasts import fetch_forecasts
 from .measurements import EntityParser
-from .settings import settings
 
-logging.basicConfig(
-    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
-)
+app = typer.Typer()
 logger = logging.getLogger(__name__)
 
 
@@ -53,18 +50,19 @@ def get_scheduler(tg: asyncio.TaskGroup):
 
 
 @log_errors
-def fetch_and_store_measurements():
-    entity_parser = EntityParser()
+def fetch_and_store_measurements(settings: Settings):
+    entity_parser = EntityParser(settings.homeassistant)
     measurements = entity_parser.get_measurements()
     hvacs = entity_parser.get_hvacs()
     opening_states = entity_parser.get_opening_states()
 
     async def _store_measurements():
-        engine = db.create_async_engine(settings.get_database_url())
+        engine = db.create_async_engine(settings.database.get_url())
         async with (
             engine.begin() as connection,
             create_client(
-                settings.base_url, settings.token_secret.get_secret_value()
+                str(settings.tutina.base_url),
+                settings.tutina.token_secret.get_secret_value(),
             ) as client,
             asyncio.TaskGroup() as tg,
         ):
@@ -81,15 +79,16 @@ def fetch_and_store_measurements():
 
 
 @log_errors
-def fetch_and_store_forecasts():
-    forecasts = fetch_forecasts()
+def fetch_and_store_forecasts(settings: Settings):
+    forecasts = fetch_forecasts(settings.owm)
 
     async def _store_forecasts():
-        engine = db.create_async_engine(settings.get_database_url())
+        engine = db.create_async_engine(settings.database.get_url())
         async with (
             engine.begin() as connection,
             create_client(
-                settings.base_url, settings.token_secret.get_secret_value()
+                str(settings.tutina.base_url),
+                settings.tutina.token_secret.get_secret_value(),
             ) as client,
             asyncio.TaskGroup() as tg,
         ):
@@ -105,13 +104,19 @@ def schedule_job(func: typing.Callable, minutes: int):
     schedule.every(minutes).minutes.at(":00").do(func)
 
 
-@click.command()
-def cli():
+@app.command()
+def ha(ctx: typer.Context):
+    """
+    Home Assistant addon main command
+    """
+
+    settings: Settings = ctx.obj["settings"]
+
     logger.info("Starting tutina...")
-    fetch_and_store_measurements()
-    fetch_and_store_forecasts()
-    schedule_job(fetch_and_store_forecasts, 60)
-    schedule_job(fetch_and_store_measurements, 5)
+    fetch_and_store_measurements(settings)
+    fetch_and_store_forecasts(settings)
+    schedule_job(functools.partial(fetch_and_store_forecasts, settings), 60)
+    schedule_job(functools.partial(fetch_and_store_measurements, settings), 5)
     while True:
         time.sleep(schedule.idle_seconds())
         schedule.run_pending()

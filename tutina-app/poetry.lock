@@ -2888,6 +2888,7 @@ pyjwt = "^2.10.1"
 python-dotenv = "^1.0.1"
 rich = "^13.9.4"
 sqlalchemy = {version = "^2.0.32", extras = ["aiomysql"]}
+typer = "^0.15.1"
 xdg-base-dirs = "^6.0.2"
 
 [package.source]

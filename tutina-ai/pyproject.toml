@@ -7,11 +7,11 @@ authors = [
 ]
 readme = "README.md"
 
-[tool.poetry]
-packages = [{ include = "tutina" }]
-
 [project.scripts]
 tutina = "tutina.lib._cli:app"
+
+[tool.poetry]
+packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"

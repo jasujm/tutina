@@ -9,6 +9,7 @@ from typing import Annotated, Any, ClassVar, Type
 
 import pydantic
 import pydantic_settings
+import sqlalchemy
 import xdg_base_dirs as xbd
 
 _DEFAULT_CONFIG_FILE_PATHS = [
@@ -61,8 +62,33 @@ def _get_data_file_path(filename: str, write: bool):
     return _get_data_file_path_for_read(filename)
 
 
+class TutinaSettings(pydantic.BaseModel):
+    token_secret: pydantic.SecretStr
+    base_url: pydantic.AnyHttpUrl
+
+
+class DatabaseUrlParts(pydantic.BaseModel):
+    drivername: str = "mysql+aiomysql"
+    username: str | None = None
+    password: pydantic.SecretStr | None = None
+    host: str | None = None
+    database: str | None = None
+    port: int | None = None
+    query: str | None = None
+
+    def to_url(self) -> sqlalchemy.engine.URL:
+        kwargs = self.dict()
+        kwargs["password"] = self.password.get_secret_value()
+        return sqlalchemy.engine.URL.create(**kwargs)
+
+
 class DatabaseSettings(pydantic.BaseModel):
-    url: pydantic.SecretStr
+    url: pydantic.SecretStr | DatabaseUrlParts = DatabaseUrlParts()
+
+    def get_url(self) -> sqlalchemy.engine.URL:
+        if isinstance(self.url, DatabaseUrlParts):
+            return self.url.to_url()
+        return sqlalchemy.engine.make_url(self.url)
 
 
 class ModelSettings(pydantic.BaseModel):
@@ -81,6 +107,21 @@ class ModelSettings(pydantic.BaseModel):
         return _get_data_file_path(_DEFAULT_MODEL_FILENAME, write)
 
 
+class HomeAssistantSettings(pydantic.BaseModel):
+    api_url: pydantic.AnyHttpUrl
+    api_token: pydantic.SecretStr
+
+
+class Coordinates(pydantic.BaseModel):
+    lon: float
+    lat: float
+
+
+class OwmSettings(pydantic.BaseModel):
+    api_key: pydantic.SecretStr
+    coordinates: Coordinates
+
+
 class Settings(pydantic_settings.BaseSettings):
     model_config = pydantic_settings.SettingsConfigDict(
         env_prefix="tutina_",
@@ -89,9 +130,11 @@ class Settings(pydantic_settings.BaseSettings):
         toml_file=_get_config_file_paths(),
     )
 
-    database: DatabaseSettings
+    tutina: TutinaSettings
+    database: DatabaseSettings = DatabaseSettings()
     model: ModelSettings = ModelSettings()
-    token_secret: pydantic.SecretStr
+    homeassistant: HomeAssistantSettings
+    owm: OwmSettings
     logging: dict[str, Any] | None = None
 
     _toml_file_override: ClassVar[Path | str | None] = None
