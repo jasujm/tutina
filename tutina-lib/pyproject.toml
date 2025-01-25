@@ -1,9 +1,16 @@
-[tool.poetry]
+[project]
 name = "tutina-lib"
 version = "0.1.0"
 description = "Common libraries for the tutina project"
-authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+authors = [
+  { name = "Jaakko Moisio", email = "jaakko@moisio.fi" }
+]
 readme = "README.md"
+
+[project.scripts]
+tutina = "tutina.lib._cli:app"
+
+[tool.poetry]
 packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
@@ -17,7 +24,7 @@ pydantic = "^2.10.4"
 pydantic-settings = "^2.7.1"
 xdg-base-dirs = "^6.0.2"
 rich = "^13.9.4"
-
+typer = "^0.15.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.3"

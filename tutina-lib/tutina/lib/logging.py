@@ -5,6 +5,7 @@ from rich.logging import RichHandler
 
 from .settings import Settings
 
+
 def setup_logging(settings: Settings):
     if (logging_config := settings.logging) is None:
         logging.basicConfig(handlers=[RichHandler()])

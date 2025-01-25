@@ -1,4 +1,4 @@
-# Tutina
+# Tutina: Predict and control indoor temperatures
 
 Tutina (Finnish for *shivering*) is a home automation tool for predicting and
 controlling indoor temperature.

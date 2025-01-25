@@ -47,16 +47,19 @@ def _get_data_file_path_for_read(filename):
             return dir_path / filename
     return None
 
+
 def _get_data_file_path_for_write(filename):
     dir_path = _DEFAULT_DATA_DIR_PATHS[0]
     if not dir_path.is_dir():
         os.mkdir(dir_path, 0o700)
     return dir_path / filename
 
+
 def _get_data_file_path(filename: str, write: bool):
     if write:
         return _get_data_file_path_for_write(filename)
     return _get_data_file_path_for_read(filename)
+
 
 class DatabaseSettings(pydantic.BaseModel):
     url: pydantic.SecretStr

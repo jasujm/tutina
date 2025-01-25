@@ -2864,7 +2864,7 @@ name = "tutina-lib"
 version = "0.1.0"
 description = "Common libraries for the tutina project"
 optional = false
-python-versions = "^3.11"
+python-versions = "^3.12"
 groups = ["main"]
 files = []
 develop = true
@@ -2878,6 +2878,7 @@ pyjwt = "^2.10.1"
 python-dotenv = "^1.0.1"
 rich = "^13.9.4"
 sqlalchemy = {version = "^2.0.32", extras = ["aiomysql"]}
+typer = "^0.15.1"
 xdg-base-dirs = "^6.0.2"
 
 [package.source]

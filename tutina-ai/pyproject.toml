@@ -1,10 +1,17 @@
-[tool.poetry]
+[project]
 name = "tutina-ai"
 version = "0.1.0"
 description = "Machine learning model for predicting and controlling indoor temperature"
-authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+authors = [
+  { name = "Jaakko Moisio", email = "jaakko@moisio.fi" }
+]
 readme = "README.md"
+
+[tool.poetry]
 packages = [{ include = "tutina" }]
+
+[project.scripts]
+tutina = "tutina.lib._cli:app"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -23,6 +30,9 @@ mypy = "^1.13.0"
 pandas-stubs = "^2.2.2.240807"
 ipython = "^8.26.0"
 seaborn = "^0.13.2"
+
+[project.entry-points.tutina_cli]
+ai = "tutina.ai._cli:app"
 
 [build-system]
 requires = ["poetry-core"]

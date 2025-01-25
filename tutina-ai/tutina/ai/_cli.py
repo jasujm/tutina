@@ -1,14 +1,13 @@
 import logging
 import random
-import sys
-from pathlib import Path
 from typing import Annotated, Callable
 
 import tomllib
 import typer
 
-from tutina.lib.logging import setup_logging
 from tutina.lib.settings import Settings
+
+app = typer.Typer()
 
 try:
     import IPython
@@ -21,26 +20,22 @@ except ImportError:
         pass
 
 
-from . import model as m
-
 logger = logging.getLogger(__name__)
 
 
-def main(
-    config_file: Annotated[Path | None, typer.Option(help="Config file")] = None,
+@app.command()
+def train(
+    ctx: typer.Context,
     interactive: Annotated[
         bool,
         typer.Option("--interactive", "-i", help="Drop to REPL after loading data"),
     ] = False,
 ):
-    if config_file:
-        if config_file.exists():
-            Settings.set_config_file(config_file)
-        else:
-            print(f"File {config_file.absolute()} does not exist", file=sys.stderr)
+    """Train Tutina AI model"""
 
-    settings = Settings()
-    setup_logging(settings)
+    from . import model as m
+
+    settings: Settings = ctx.obj["settings"]
 
     data_file = settings.model.get_data_file_path(write=True)
     logger.info(f"Loading data from %s", data_file)
