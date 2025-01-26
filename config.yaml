@@ -1,6 +1,6 @@
 name: "Tutina"
 description: "Tools for predicting and controlling indoor temperature"
-version: "0.4.1"
+version: "0.5"
 slug: "tutina"
 init: false
 arch:
