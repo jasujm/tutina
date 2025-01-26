@@ -1,18 +1,10 @@
 #!/usr/bin/with-contenv bashio
 
-export database_url=$(bashio::services mysql | jq '{
-   drivername: "mysql+aiomysql",
-   username: .username,
-   password: .password,
-   host: .host,
-   port: .port,
-   database: "tutina"
-}')
-export homeassistant_api_url="http://supervisor/core/api"
-export homeassistant_api_token=$SUPERVISOR_TOKEN
-export owm_api_key=$(bashio::config "owm_api_key")
-export owm_coordinates=$(bashio::config "owm_coordinates")
-export base_url=$(bashio::config "tutina_base_url")
-export token_secret=$(bashio::config "tutina_token_secret")
+export tutina_homeassistant__api_url="http://supervisor/core/api"
+export tutina_homeassistant__api_token=$SUPERVISOR_TOKEN
+export tutina_owm__api_key=$(bashio::config "owm_api_key")
+export tutina_owm__coordinates=$(bashio::config "owm_coordinates")
+export tutina_tutina__base_url=$(bashio::config "tutina_base_url")
+export tutina_tutina__token_secret=$(bashio::config "tutina_token_secret")
 
-/usr/src/tutina/tutina-ha/.venv/bin/python3 -m tutina.ha
+/usr/src/tutina/tutina-ha/.venv/bin/tutina ha

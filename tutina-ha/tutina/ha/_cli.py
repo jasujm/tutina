@@ -29,6 +29,7 @@ def log_errors(func: typing.Callable):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
+            logger.debug("Running %s", func.__name__)
             return func(*args, **kwargs)
         except Exception:
             logger.exception("Error when running %s", func.__name__)
@@ -38,6 +39,7 @@ def log_errors(func: typing.Callable):
 
 async def _log_errors_async(aw: typing.Awaitable):
     try:
+        logger.debug("Running %r", aw)
         await aw
     except Exception:
         logger.exception("Error when running %r", aw)

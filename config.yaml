@@ -20,5 +20,3 @@ schema:
   tutina_base_url: url
   tutina_token_secret: str
 homeassistant_api: true
-services:
-  - mysql:need

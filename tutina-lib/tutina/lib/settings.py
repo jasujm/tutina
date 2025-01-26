@@ -126,7 +126,7 @@ class Settings(pydantic_settings.BaseSettings):
     model_config = pydantic_settings.SettingsConfigDict(
         env_prefix="tutina_",
         extra="ignore",
-        env_nested_delimiter="_",
+        env_nested_delimiter="__",
         env_ignore_empty=True,
         toml_file=_get_config_file_paths(),
     )
