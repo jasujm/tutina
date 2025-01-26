@@ -78,7 +78,7 @@ class DatabaseUrlParts(pydantic.BaseModel):
 
     def to_url(self) -> sqlalchemy.engine.URL:
         kwargs = self.dict()
-        kwargs["password"] = self.password.get_secret_value()
+        kwargs["password"] = self.password and self.password.get_secret_value()
         return sqlalchemy.engine.URL.create(**kwargs)
 
 
@@ -88,7 +88,7 @@ class DatabaseSettings(pydantic.BaseModel):
     def get_url(self) -> sqlalchemy.engine.URL:
         if isinstance(self.url, DatabaseUrlParts):
             return self.url.to_url()
-        return sqlalchemy.engine.make_url(self.url)
+        return sqlalchemy.engine.make_url(self.url.get_secret_value())
 
 
 class ModelSettings(pydantic.BaseModel):
@@ -130,11 +130,11 @@ class Settings(pydantic_settings.BaseSettings):
         toml_file=_get_config_file_paths(),
     )
 
-    tutina: TutinaSettings
+    tutina: TutinaSettings | None = None
     database: DatabaseSettings = DatabaseSettings()
     model: ModelSettings = ModelSettings()
-    homeassistant: HomeAssistantSettings
-    owm: OwmSettings
+    homeassistant: HomeAssistantSettings | None = None
+    owm: OwmSettings | None = None
     logging: dict[str, Any] | None = None
 
     _toml_file_override: ClassVar[Path | str | None] = None

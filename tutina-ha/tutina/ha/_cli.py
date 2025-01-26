@@ -35,23 +35,27 @@ def log_errors(func: typing.Callable):
     return wrapper
 
 
-async def _log_errors_async(aw: typing.Awaitable) -> typing.Awaitable:
+async def _log_errors_async(aw: typing.Awaitable):
     try:
-        return await aw
+        await aw
     except Exception:
         logger.exception("Error when running %r", aw)
 
 
 def get_scheduler(tg: asyncio.TaskGroup):
     def _schedule(aw: typing.Awaitable):
-        return tg.create_task(_log_errors_async(aw))
+        tg.create_task(_log_errors_async(aw))
 
     return _schedule
 
 
 @log_errors
 def fetch_and_store_measurements(settings: Settings):
-    entity_parser = EntityParser(settings.homeassistant)
+    if (homeassistant := settings.homeassistant) is None:
+        logger.info("No HA settings, skipping measurements")
+        return
+
+    entity_parser = EntityParser(homeassistant)
     measurements = entity_parser.get_measurements()
     hvacs = entity_parser.get_hvacs()
     opening_states = entity_parser.get_opening_states()
@@ -80,7 +84,11 @@ def fetch_and_store_measurements(settings: Settings):
 
 @log_errors
 def fetch_and_store_forecasts(settings: Settings):
-    forecasts = fetch_forecasts(settings.owm)
+    if (owm := settings.owm) is None:
+        logger.info("No OWM settings, skipping forecasts")
+        return
+
+    forecasts = fetch_forecasts(owm)
 
     async def _store_forecasts():
         engine = db.create_async_engine(settings.database.get_url())
@@ -118,9 +126,6 @@ def ha(ctx: typer.Context):
     schedule_job(functools.partial(fetch_and_store_forecasts, settings), 60)
     schedule_job(functools.partial(fetch_and_store_measurements, settings), 5)
     while True:
-        time.sleep(schedule.idle_seconds())
+        if idle_seconds := schedule.idle_seconds():
+            time.sleep(idle_seconds)
         schedule.run_pending()
-
-
-if __name__ == "__main__":
-    cli()
