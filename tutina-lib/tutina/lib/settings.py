@@ -64,7 +64,7 @@ def _get_data_file_path(filename: str, write: bool):
 
 class TutinaSettings(pydantic.BaseModel):
     token_secret: pydantic.SecretStr
-    base_url: pydantic.AnyHttpUrl
+    base_url: pydantic.AnyHttpUrl = "http://localhost:8000"  # type: ignore
 
 
 class DatabaseUrlParts(pydantic.BaseModel):
@@ -127,11 +127,12 @@ class Settings(pydantic_settings.BaseSettings):
         env_prefix="tutina_",
         extra="ignore",
         env_nested_delimiter="_",
+        env_ignore_empty=True,
         toml_file=_get_config_file_paths(),
     )
 
     tutina: TutinaSettings | None = None
-    database: DatabaseSettings = DatabaseSettings()
+    database: DatabaseSettings | None = None
     model: ModelSettings = ModelSettings()
     homeassistant: HomeAssistantSettings | None = None
     owm: OwmSettings | None = None
