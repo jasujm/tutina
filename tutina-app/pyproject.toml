@@ -1,9 +1,16 @@
-[tool.poetry]
+[project]
 name = "tutina-app"
 version = "0.1.0"
 description = "Web application serving predictions using the Tutina AI model"
-authors = ["Jaakko Moisio <jaakko@moisio.fi>"]
+authors = [
+  { name = "Jaakko Moisio", email = "jaakko@moisio.fi" }
+]
 readme = "README.md"
+
+[project.urls]
+homepage = "https://github.com/jasujm/tutina"
+
+[tool.poetry]
 packages = [{ include = "tutina" }]
 
 [tool.poetry.dependencies]
@@ -15,7 +22,6 @@ tutina-ai = { path="../tutina-ai", develop=true }
 pyjwt = "^2.10.1"
 pydantic-settings = "^2.7.1"
 uvicorn = "^0.34.0"
-
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.3"

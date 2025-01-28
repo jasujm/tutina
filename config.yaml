@@ -2,6 +2,7 @@ name: "Tutina"
 description: "Tools for predicting and controlling indoor temperature"
 version: "0.5"
 slug: "tutina"
+url: "https://github.com/jasujm/tutina"
 init: false
 arch:
   - aarch64

@@ -1,11 +1,14 @@
 [project]
 name = "tutina"
-version = "0.4.1"
+version = "0.5"
 description = "Home Assistant addon for predicting and controlling indoor temperature"
 authors = [
   { name = "Jaakko Moisio", email = "jaakko@moisio.fi" }
 ]
 readme = "README.md"
+
+[project.urls]
+homepage = "https://github.com/jasujm/tutina"
 
 [project.scripts]
 tutina = "tutina.lib._cli:app"
