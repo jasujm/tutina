@@ -9,4 +9,6 @@
 !*/pyproject.toml
 !*/poetry.lock
 !*/tutina
+!*/alembic.ini
+!*/alembic
 **/__pycache__
