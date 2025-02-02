@@ -1,5 +1,5 @@
 [project]
-name = "tutina"
+name = "tutina-ha"
 version = "0.5"
 description = "Home Assistant addon for predicting and controlling indoor temperature"
 authors = [
@@ -23,7 +23,7 @@ pydantic = {version = "^2.8", extras = ["dotenv"]}
 schedule = "^1.2"
 requests = "^2.32.3"
 pydantic-settings = "^2.5.2"
-tutina-lib = { path="../tutina-lib", develop=true }
+tutina-lib = { path="../tutina-lib", develop=true, extras=["db"] }
 typer = "^0.15.1"
 
 

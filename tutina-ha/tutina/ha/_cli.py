@@ -8,14 +8,7 @@ import typing
 import schedule
 import typer
 
-from tutina.lib import db
 from tutina.lib.client import create_client
-from tutina.lib.data import (
-    store_forecasts,
-    store_hvacs,
-    store_measurements,
-    store_opening_states,
-)
 from tutina.lib.settings import Settings
 
 from .forecasts import fetch_forecasts
@@ -60,19 +53,14 @@ def fetch_and_store_measurements(settings: Settings):
 
     entity_parser = EntityParser(homeassistant)
     measurements = entity_parser.get_measurements()
+    logger.debug("Measurements: %r", measurements)
     hvacs = entity_parser.get_hvacs()
+    logger.debug("Hvacs: %r", hvacs)
     opening_states = entity_parser.get_opening_states()
+    logger.debug("Opening states: %r", opening_states)
 
     async def _store_measurements():
         async with contextlib.AsyncExitStack() as exit_stack:
-            tg = asyncio.TaskGroup()
-            if database := settings.database:
-                engine = db.create_async_engine(database.get_url())
-                exit_stack.push_async_callback(engine.dispose)
-                connection = await exit_stack.enter_async_context(engine.begin())
-            else:
-                logger.debug("No database settings, skipping storing measurements")
-                connection = None
             if tutina := settings.tutina:
                 client = await exit_stack.enter_async_context(
                     create_client(
@@ -85,10 +73,6 @@ def fetch_and_store_measurements(settings: Settings):
                 client = None
             tg = await exit_stack.enter_async_context(asyncio.TaskGroup())
             schedule = get_scheduler(tg)
-            if connection:
-                schedule(store_measurements(measurements, connection=connection))
-                schedule(store_hvacs(hvacs, connection=connection))
-                schedule(store_opening_states(opening_states, connection=connection))
             if client:
                 schedule(client.submit_measurements(measurements))
                 schedule(client.submit_hvacs(hvacs))
@@ -104,16 +88,10 @@ def fetch_and_store_forecasts(settings: Settings):
         return
 
     forecasts = fetch_forecasts(owm)
+    logger.debug("Forecasts: %r", forecasts)
 
     async def _store_forecasts():
         async with contextlib.AsyncExitStack() as exit_stack:
-            if database := settings.database:
-                engine = db.create_async_engine(database.get_url())
-                exit_stack.push_async_callback(engine.dispose)
-                connection = await exit_stack.enter_async_context(engine.begin())
-            else:
-                logger.debug("No database settings, skipping storing forecasts")
-                connection = None
             if tutina := settings.tutina:
                 client = await exit_stack.enter_async_context(
                     create_client(
@@ -122,12 +100,10 @@ def fetch_and_store_forecasts(settings: Settings):
                     )
                 )
             else:
-                logger.debug("No tutina settings, skipping submitting forecasts")
+                logger.debug("No client settings, skipping submitting forecasts")
                 client = None
             tg = await exit_stack.enter_async_context(asyncio.TaskGroup())
             schedule = get_scheduler(tg)
-            if connection:
-                schedule(store_forecasts(forecasts, connection=connection))
             if client:
                 schedule(client.submit_forecasts(forecasts))
 

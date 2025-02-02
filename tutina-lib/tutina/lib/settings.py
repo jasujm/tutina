@@ -9,7 +9,6 @@ from typing import Annotated, Any, ClassVar, Type
 
 import pydantic
 import pydantic_settings
-import sqlalchemy
 import xdg_base_dirs as xbd
 
 _DEFAULT_CONFIG_FILE_PATHS = [
@@ -76,7 +75,9 @@ class DatabaseUrlParts(pydantic.BaseModel):
     port: int | None = None
     query: str | None = None
 
-    def to_url(self) -> sqlalchemy.engine.URL:
+    def to_url(self):
+        import sqlalchemy
+
         kwargs = self.dict()
         kwargs["password"] = self.password and self.password.get_secret_value()
         return sqlalchemy.engine.URL.create(**kwargs)
@@ -85,7 +86,9 @@ class DatabaseUrlParts(pydantic.BaseModel):
 class DatabaseSettings(pydantic.BaseModel):
     url: pydantic.SecretStr | DatabaseUrlParts = DatabaseUrlParts()
 
-    def get_url(self) -> sqlalchemy.engine.URL:
+    def get_url(self):
+        import sqlalchemy
+
         if isinstance(self.url, DatabaseUrlParts):
             return self.url.to_url()
         return sqlalchemy.engine.make_url(self.url.get_secret_value())

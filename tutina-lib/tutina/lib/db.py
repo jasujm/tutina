@@ -1,11 +1,11 @@
 import os
 import typing
-from enum import Enum
 
 from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Enum,
     Float,
     ForeignKey,
     Integer,
@@ -16,29 +16,13 @@ from sqlalchemy import (
     func,
     select,
 )
-from sqlalchemy import (
-    Enum as EnumField,
-)
 from sqlalchemy.engine import URL as EngineURL
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, create_async_engine
 
 from . import util
+from .types import HvacState, OpeningType
 
 metadata = MetaData()
-
-
-class HvacState(Enum):
-    off = "off"
-    auto = "auto"
-    cool = "cool"
-    heat = "heat"
-    dry = "dry"
-    fan_only = "fan_only"
-
-
-class OpeningType(Enum):
-    door = "door"
-    window = "window"
 
 
 UTC_NOW: typing.Any
@@ -90,7 +74,7 @@ hvacs = Table(
     metadata,
     Column("timestamp", DateTime, default=UTC_NOW, primary_key=True),
     Column("device_id", Integer, ForeignKey("hvac_devices.id"), primary_key=True),
-    Column("state", EnumField(HvacState), nullable=True),
+    Column("state", Enum(HvacState), nullable=True),
     Column("temperature", Float, nullable=True),
 )
 
@@ -98,7 +82,7 @@ openings = Table(
     "openings",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("type", EnumField(OpeningType), nullable=False),
+    Column("type", Enum(OpeningType), nullable=False),
     Column("slug", String(31), nullable=False),
     UniqueConstraint("type", "slug"),
 )

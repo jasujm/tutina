@@ -1,9 +1,22 @@
 from datetime import datetime
+from enum import Enum
 from typing import Annotated
 
 import pydantic
 
-from .db import HvacState, OpeningType
+
+class HvacState(Enum):
+    off = "off"
+    auto = "auto"
+    cool = "cool"
+    heat = "heat"
+    dry = "dry"
+    fan_only = "fan_only"
+
+
+class OpeningType(Enum):
+    door = "door"
+    window = "window"
 
 
 class Measurement(pydantic.BaseModel):
