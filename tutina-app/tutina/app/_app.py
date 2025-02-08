@@ -4,7 +4,7 @@ from .auth import authorize
 from .dependencies import preloaded_dependencies
 from .routers import data, predictions
 
-description="""
+description = """
 This API is part of a work-in-progress software suite for predicting and
 optimizing indoor temperatures. The other main component is a Home Assistant
 addon interacting with the API and producing the actual data it needs.

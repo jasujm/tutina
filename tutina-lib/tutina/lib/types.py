@@ -1,8 +1,18 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Iterable
 
+import more_itertools as mi
 import pydantic
+
+TIME_SERIES_WINDOW_SIZE = timedelta(hours=1)
+
+
+def _has_valid_spacing(timestamps: Iterable[datetime]):
+    return all(
+        second - first == TIME_SERIES_WINDOW_SIZE
+        for (first, second) in mi.pairwise(timestamps)
+    )
 
 
 class HvacState(Enum):
@@ -59,6 +69,12 @@ class FeatureTimeSeries(pydantic.RootModel):
     """Time series of numeric data"""
 
     root: dict[datetime, float]
+
+    @pydantic.model_validator(mode="after")
+    def timestamps_have_valid_spacing(self):
+        if _has_valid_spacing(self.root.keys()):
+            return self
+        raise ValueError(f"Timestamps should have spacing {TIME_SERIES_WINDOW_SIZE}")
 
 
 class FeaturesByName(pydantic.RootModel):
