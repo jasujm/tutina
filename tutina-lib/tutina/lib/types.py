@@ -82,6 +82,12 @@ class FeaturesByName(pydantic.RootModel):
 
     root: dict[str, FeatureTimeSeries]
 
+    @pydantic.model_validator(mode="after")
+    def time_series_have_same_timestamps(self):
+        if mi.all_equal(ts.root.keys() for ts in self.root.values()):
+            return self
+        raise ValueError("All feature time series should have the same timestamps")
+
 
 class ForecastFeatures(pydantic.BaseModel):
     """Weather forecast as time series"""
