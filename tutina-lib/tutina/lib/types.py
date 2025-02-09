@@ -1,7 +1,9 @@
+from collections.abc import KeysView
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Annotated, Iterable
 
+import annotated_types as at
 import more_itertools as mi
 import pydantic
 
@@ -80,7 +82,12 @@ class FeatureTimeSeries(pydantic.RootModel):
 class FeaturesByName(pydantic.RootModel):
     """Collection of feature time series by name"""
 
-    root: dict[str, FeatureTimeSeries]
+    root: Annotated[dict[str, FeatureTimeSeries], at.MinLen(1)]
+
+    @property
+    def timestamps(self) -> KeysView[datetime]:
+        first_time_series = next(iter(self.root.values()))
+        return first_time_series.root.keys()
 
     @pydantic.model_validator(mode="after")
     def time_series_have_same_timestamps(self):
@@ -91,6 +98,10 @@ class FeaturesByName(pydantic.RootModel):
 
 class ForecastFeatures(pydantic.BaseModel):
     """Weather forecast as time series"""
+
+    @property
+    def timestamps(self) -> KeysView[datetime]:
+        return self.temperature.root.keys()
 
     temperature: FeatureTimeSeries
 
@@ -149,3 +160,27 @@ class TutinaModelInput(pydantic.BaseModel):
             },
         ),
     ]
+
+    @pydantic.model_validator(mode="after")
+    def validate_feature_timestamps(self):
+        last_history_timestamp = next(reversed(self.history.timestamps))
+        first_control_timestamp = next(iter(self.control.timestamps))
+        last_control_timestamp = next(reversed(self.control.timestamps))
+        first_forecast_timestamp = next(iter(self.forecasts.timestamps))
+        last_forecast_timestamp = next(reversed(self.forecasts.timestamps))
+        if last_history_timestamp != first_forecast_timestamp:
+            raise ValueError(
+                "The last history timestamp should match the first timestamp in forecast, "
+                f"but {last_history_timestamp} != {first_forecast_timestamp}"
+            )
+        if last_history_timestamp + TIME_SERIES_WINDOW_SIZE != first_control_timestamp:
+            raise ValueError(
+                "The last history timestamp should immediately precede the first control timestamp, "
+                f"but {last_history_timestamp} + {TIME_SERIES_WINDOW_SIZE} != {first_forecast_timestamp}"
+            )
+        if last_forecast_timestamp < last_control_timestamp:
+            raise ValueError(
+                "The last forecast timestamp should not be earlier than the last control timestamp, "
+                f"but {last_forecast_timestamp} < {last_control_timestamp}"
+            )
+        return self
