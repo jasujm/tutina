@@ -17,11 +17,12 @@ packages = [{ include = "tutina" }]
 python = "^3.12"
 fastapi = {version = "^0.115.6"}
 pydantic = "^2.10.3"
-tutina-lib = { path="../tutina-lib", develop=true }
+tutina-lib = { path="../tutina-lib", develop=true, extras=["db"] }
 tutina-ai = { path="../tutina-ai", develop=true }
 pyjwt = "^2.10.1"
 pydantic-settings = "^2.7.1"
 uvicorn = "^0.34.0"
+aiomysql = "^0.2.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.3"
