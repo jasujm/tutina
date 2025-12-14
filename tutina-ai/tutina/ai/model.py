@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import datetime
 import functools
 import itertools
 
@@ -55,6 +56,11 @@ def _windowed_timestamp(column: sa.Column, window=TIME_WINDOW_IN_SECONDS):
     ).label("timestamp")
 
 
+def _ensure_index_is_in_utc(df: pd.DataFrame):
+    df.index = df.index.tz_localize(datetime.UTC)
+    return df
+
+
 def _prepend_column(column: str | tuple[str], name: str):
     if isinstance(column, str):
         return (name, column)
@@ -108,13 +114,15 @@ async def load_measurements_data(connection: AsyncConnection):
         lambda: pd.DataFrame.from_records(
             result.mappings().fetchall(),
             coerce_float=True,
-        ).pipe(
+        )
+        .pipe(
             lambda df: df.pivot(
                 index="timestamp",
                 columns="location",
                 values=[TEMPERATURE, "humidity", "pressure"],
             )
         )
+        .pipe(_ensure_index_is_in_utc)
     )
 
 
@@ -136,12 +144,14 @@ async def load_hvacs_data(connection: AsyncConnection):
         lambda: pd.DataFrame.from_records(
             result.mappings().fetchall(),
             coerce_float=True,
-        ).pipe(
+        )
+        .pipe(
             lambda df: df.pivot(
                 index="timestamp",
                 columns="device",
             )
         )
+        .pipe(_ensure_index_is_in_utc)
     )
 
 
@@ -162,12 +172,14 @@ async def load_openings_data(connection: AsyncConnection):
         lambda: pd.DataFrame.from_records(
             result.mappings().fetchall(),
             coerce_float=True,
-        ).pipe(
+        )
+        .pipe(
             lambda df: df.pivot(
                 index="timestamp",
                 columns="opening",
             )
         )
+        .pipe(_ensure_index_is_in_utc)
     )
 
 
@@ -190,20 +202,24 @@ async def load_forecasts_data(connection: AsyncConnection):
         .order_by(time_column)
     )
     result = await connection.execute(expression)
-    pivoted_data = await asyncio.to_thread(
+    return await asyncio.to_thread(
         lambda: pd.DataFrame.from_records(
             result.mappings().fetchall(),
             coerce_float=True,
-        ).pipe(
+        )
+        .pipe(
             lambda df: df.pivot(
                 index="timestamp",
                 columns="in_hours",
             )
         )
-    )
-    return pivoted_data.rename(
-        columns=lambda col: str(col).zfill(2),
-        level=1,
+        .pipe(_ensure_index_is_in_utc)
+        .pipe(
+            lambda df: df.rename(
+                columns=lambda col: str(col).zfill(2),
+                level=1,
+            )
+        )
     )
 
 
