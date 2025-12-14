@@ -104,24 +104,17 @@ async def load_measurements_data(connection: AsyncConnection):
         )
     )
     result = await connection.execute(expression)
-    loop = asyncio.get_event_loop()
-    data = await loop.run_in_executor(
-        None,
-        functools.partial(
-            pd.DataFrame.from_records,
-            result.fetchall(),
-            columns=result.keys(),
+    return await asyncio.to_thread(
+        lambda: pd.DataFrame.from_records(
+            result.mappings().fetchall(),
             coerce_float=True,
-        ),
-    )
-    return await loop.run_in_executor(
-        None,
-        functools.partial(
-            data.pivot,
-            index="timestamp",
-            columns="location",
-            values=[TEMPERATURE, "humidity", "pressure"],
-        ),
+        ).pipe(
+            lambda df: df.pivot(
+                index="timestamp",
+                columns="location",
+                values=[TEMPERATURE, "humidity", "pressure"],
+            )
+        )
     )
 
 
@@ -139,27 +132,20 @@ async def load_hvacs_data(connection: AsyncConnection):
         .order_by(time_column)
     )
     result = await connection.execute(expression)
-    loop = asyncio.get_event_loop()
-    data = await loop.run_in_executor(
-        None,
-        functools.partial(
-            pd.DataFrame.from_records,
-            result.fetchall(),
-            columns=result.keys(),
+    return await asyncio.to_thread(
+        lambda: pd.DataFrame.from_records(
+            result.mappings().fetchall(),
             coerce_float=True,
-        ),
-    )
-    return await loop.run_in_executor(
-        None,
-        functools.partial(
-            data.pivot,
-            index="timestamp",
-            columns="device",
-        ),
+        ).pipe(
+            lambda df: df.pivot(
+                index="timestamp",
+                columns="device",
+            )
+        )
     )
 
 
-async def load_openings_data(connection: sa.Connection):
+async def load_openings_data(connection: AsyncConnection):
     time_column = _windowed_timestamp(opening_states.c.timestamp)
     expression = (
         sa.select(
@@ -172,27 +158,20 @@ async def load_openings_data(connection: sa.Connection):
         .order_by(time_column)
     )
     result = await connection.execute(expression)
-    loop = asyncio.get_event_loop()
-    data = await loop.run_in_executor(
-        None,
-        functools.partial(
-            pd.DataFrame.from_records,
-            result.fetchall(),
-            columns=result.keys(),
+    return await asyncio.to_thread(
+        lambda: pd.DataFrame.from_records(
+            result.mappings().fetchall(),
             coerce_float=True,
-        ),
-    )
-    return await loop.run_in_executor(
-        None,
-        functools.partial(
-            data.pivot,
-            index="timestamp",
-            columns="opening",
-        ),
+        ).pipe(
+            lambda df: df.pivot(
+                index="timestamp",
+                columns="opening",
+            )
+        )
     )
 
 
-async def load_forecasts_data(connection: sa.Connection):
+async def load_forecasts_data(connection: AsyncConnection):
     time_column = _windowed_timestamp(forecasts.c.timestamp, 3600)
     in_hours_column = saf.hour(
         saf.timediff(forecasts.c.reference_timestamp, time_column)
@@ -211,23 +190,16 @@ async def load_forecasts_data(connection: sa.Connection):
         .order_by(time_column)
     )
     result = await connection.execute(expression)
-    loop = asyncio.get_event_loop()
-    data = await loop.run_in_executor(
-        None,
-        functools.partial(
-            pd.DataFrame.from_records,
-            result.fetchall(),
-            columns=result.keys(),
+    pivoted_data = await asyncio.to_thread(
+        lambda: pd.DataFrame.from_records(
+            result.mappings().fetchall(),
             coerce_float=True,
-        ),
-    )
-    pivoted_data = await loop.run_in_executor(
-        None,
-        functools.partial(
-            data.pivot,
-            index="timestamp",
-            columns="in_hours",
-        ),
+        ).pipe(
+            lambda df: df.pivot(
+                index="timestamp",
+                columns="in_hours",
+            )
+        )
     )
     return pivoted_data.rename(
         columns=lambda col: str(col).zfill(2),
